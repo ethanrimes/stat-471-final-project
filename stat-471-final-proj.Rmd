@@ -1,0 +1,571 @@
+---
+title: "stat-471-final-proj"
+author: "Ethan"
+date: "12/2/2021"
+output:
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, lazy.cache = FALSE)
+library(tidyverse)
+library(cowplot)
+library(rnn)
+library(caret)
+```
+
+```{r imports, cache = TRUE}
+# a-z = 26 + aa-az = 26 + ba-bn = 14, sum = 66
+# country name, country code, indicator name, indicator code, 1960-2020, empty final col
+wdi_raw <- 
+  read_csv("/Users/ethan/Documents/R/stat-471-final-project/WDI_csv/WDIData.csv",
+           col_names = TRUE)
+# for country code, (country) table name, region, income group, latest industrial data (year), latest trade data (year)
+wdi_country <- 
+  read_csv("/Users/ethan/Documents/R/stat-471-final-project/WDI_csv/WDICountry.csv",
+           col_names = TRUE)
+# for series code, topic, indicator name, short definition, long definition, periodicity, aggregation method
+wdi_series <- 
+  read_csv("/Users/ethan/Documents/R/stat-471-final-project/WDI_csv/WDISeries.csv",
+           col_names = TRUE)
+# integrate trade data
+```
+
+
+# Part 1: Economic Structure and Income per Capita (EDA)
+
+```{r plots-p1-p4}
+# this part is almost an EDA
+
+# let's create a table showing average shares by income group over time
+holy_trinity <- wdi_raw %>% 
+  filter(`Indicator Code` %in% c("SL.SRV.EMPL.ZS", 
+                                 "SL.IND.EMPL.ZS", 
+                                 "SL.AGR.EMPL.ZS"))
+
+summary_trinity_time_income_group <- wdi_country %>% 
+  filter(!(is.na(`Currency Unit`))) %>% # remove regional groupings
+  select(`Short Name`, `Income Group`) %>%
+  inner_join(holy_trinity, by = c("Short Name" = "Country Name")) %>%
+  group_by(`Short Name`, `Indicator Code`, `Income Group`) %>%
+  summarise(`90s` = mean(`1991`,`1992`,`1993`,`1994`,`1995`,`1996`,
+                         `1997`,`1998`,`1999`, na.rm=TRUE),
+            `00s` = mean(`2000`,`2001`,`2002`,`2003`,`2004`,`2005`,`2006`,`2007`,
+                         `2008`,`2009`, na.rm=TRUE),
+            `10s` = mean(`2010`,`2011`,`2012`,`2013`,`2014`,`2015`,`2016`,
+                         `2017`,`2018`,`2019`, na.rm=TRUE))
+
+summary_trinity_time_income_group_90s <- 
+  summary_trinity_time_income_group %>%
+  select(`Indicator Code`, `Income Group`, `90s`) %>%
+  pivot_wider(names_from = `Indicator Code`, values_from = `90s`) %>%
+  transmute(`Income Group` = as.factor(`Income Group`), 
+            `Agriculture` = SL.AGR.EMPL.ZS, # change variable names
+            `Industry` = SL.IND.EMPL.ZS,
+            `Services` = SL.SRV.EMPL.ZS) %>%
+  pivot_longer(cols = c(`Agriculture`,
+                        `Industry`,
+                        `Services`),
+               values_to = "value",
+               names_to = "Sector") %>%
+  group_by(`Income Group`, Sector) %>% 
+  summarise(value = mean(value, na.rm =TRUE)) %>% # calculate average share per sector
+  ungroup() %>%
+  mutate(income_group_order = case_when( # order the income groups
+    `Income Group` == "Low income" ~ 1,
+    `Income Group` == "Lower middle income" ~ 2,
+    `Income Group` == "Upper middle income" ~ 3,
+    `Income Group` == "High income" ~ 4
+  ))
+p1 <- summary_trinity_time_income_group_90s %>%
+  ggplot(aes(x = Sector, y = value, fill = 
+               fct_reorder(.f = summary_trinity_time_income_group_90s$`Income Group`, .x = summary_trinity_time_income_group_90s$income_group_order))) +
+  geom_bar(position="dodge", stat="identity") +
+  labs(x = "Sector", y = "Share of Employment",
+       title = "1991-1999 Average Employment by Sector by Income Group") +
+  guides(fill=guide_legend(title="Income Group")) +
+  theme_bw()
+  
+summary_trinity_time_income_group_00s <- 
+  summary_trinity_time_income_group %>%
+  select(`Indicator Code`, `Income Group`, `00s`) %>%
+  pivot_wider(names_from = `Indicator Code`, values_from = `00s`) %>%
+  transmute(`Income Group` = as.factor(`Income Group`), 
+            `Agriculture` = SL.AGR.EMPL.ZS, # change variable names
+            `Industry` = SL.IND.EMPL.ZS,
+            `Services` = SL.SRV.EMPL.ZS) %>%
+  pivot_longer(cols = c(`Agriculture`,
+                        `Industry`,
+                        `Services`),
+               values_to = "value",
+               names_to = "Sector") %>%
+  group_by(`Income Group`, Sector) %>% 
+  summarise(value = mean(value, na.rm =TRUE)) %>% # calculate average share per sector
+  ungroup() %>%
+  mutate(income_group_order = case_when( # order the income groups
+    `Income Group` == "Low income" ~ 1,
+    `Income Group` == "Lower middle income" ~ 2,
+    `Income Group` == "Upper middle income" ~ 3,
+    `Income Group` == "High income" ~ 4
+  ))
+p2 <- summary_trinity_time_income_group_00s %>%
+  ggplot(aes(x = Sector, y = value, fill = 
+               fct_reorder(.f = summary_trinity_time_income_group_00s$`Income Group`, .x = summary_trinity_time_income_group_00s$income_group_order))) +
+  geom_bar(position="dodge", stat="identity") +
+  labs(x = "Sector", y = "Share of Employment",
+       title = "2000-2009 Average Employment by Sector by Income Group") +
+  guides(fill=guide_legend(title="Income Group")) +
+  theme_bw()
+
+summary_trinity_time_income_group_10s <- 
+  summary_trinity_time_income_group %>%
+  select(`Indicator Code`, `Income Group`, `10s`) %>%
+  pivot_wider(names_from = `Indicator Code`, values_from = `10s`) %>%
+  transmute(`Income Group` = as.factor(`Income Group`), 
+            `Agriculture` = SL.AGR.EMPL.ZS, # change variable names
+            `Industry` = SL.IND.EMPL.ZS,
+            `Services` = SL.SRV.EMPL.ZS) %>%
+  pivot_longer(cols = c(`Agriculture`,
+                        `Industry`,
+                        `Services`),
+               values_to = "value",
+               names_to = "Sector") %>%
+  group_by(`Income Group`, Sector) %>% 
+  summarise(value = mean(value, na.rm =TRUE)) %>% # calculate average share per sector
+  ungroup() %>%
+  mutate(income_group_order = case_when( # order the income groups
+    `Income Group` == "Low income" ~ 1,
+    `Income Group` == "Lower middle income" ~ 2,
+    `Income Group` == "Upper middle income" ~ 3,
+    `Income Group` == "High income" ~ 4
+  ))
+p3 <- summary_trinity_time_income_group_10s %>%
+  ggplot(aes(x = Sector, y = value, fill = 
+               fct_reorder(.f = summary_trinity_time_income_group_10s$`Income Group`, .x = summary_trinity_time_income_group_10s$income_group_order))) +
+  geom_bar(position="dodge", stat="identity") +
+  labs(x = "Sector", y = "Share of Employment",
+       title = "2010-2019 Average Employment by Sector by Income Group") +
+  guides(fill=guide_legend(title="Income Group")) +
+  theme_bw()
+```
+```{r plot-grid-p1-p4}
+# you can see that there is a clear distinction between different income groups of countries
+plot_grid(p1,p2,p3,ncol=1)
+```
+```{r share-change-over-time}
+# lets see how the shares of each sector evolve over time
+shares_change_over_time <- wdi_country %>% 
+  filter(!(is.na(`Currency Unit`))) %>% # remove regional groupings
+  select(`Short Name`, `Income Group`) %>%
+  inner_join(holy_trinity, by = c("Short Name" = "Country Name")) %>% 
+  pivot_longer(cols=`1991`:`2019`, names_to = "year", values_to = "share") %>%
+  select(`Short Name`, `Income Group`, `Indicator Code`, year, share) %>%
+  drop_na() %>%
+  group_by(`Indicator Code`, year, `Income Group`) %>%
+  summarise(share = mean(share)) %>%
+  transmute(year = year, share = share,`Income Group`=`Income Group`,
+            indicator = as.factor(case_when(
+              `Indicator Code` == "SL.AGR.EMPL.ZS" ~ "Agriculture",
+              `Indicator Code` == "SL.IND.EMPL.ZS" ~ "Industry",
+              `Indicator Code` == "SL.SRV.EMPL.ZS" ~ "Services"
+            )))
+shares_change_over_time %>%
+  ggplot(aes(x = year, y = share, colour=indicator)) +
+  geom_point() +
+  facet_wrap(~`Income Group`) +
+  scale_x_discrete(breaks = seq(1991, 2019, by = 5))
+  
+```
+```{r shares-change-tibble}
+high_inc_agr_1991 =  shares_change_over_time %>% 
+  filter(`Income Group` == "High income",
+         year == 1991,
+         indicator == "Agriculture") %>% pull(share)
+high_inc_agr_2019 = shares_change_over_time %>% 
+  filter(`Income Group` == "High income",
+         year == 2019,
+         indicator == "Agriculture") %>% pull(share)
+high_inc_ind_1991 = shares_change_over_time %>% 
+  filter(`Income Group` == "High income",
+         year == 1991,
+         indicator == "Industry") %>% pull(share)
+high_inc_ind_2019 = shares_change_over_time %>% 
+  filter(`Income Group` == "High income",
+         year == 2019,
+         indicator == "Industry") %>% pull(share)
+high_inc_srv_1991 = shares_change_over_time %>% 
+  filter(`Income Group` == "High income",
+         year == 1991,
+         indicator == "Services") %>% pull(share)
+high_inc_srv_2019 = shares_change_over_time %>% 
+  filter(`Income Group` == "High income",
+         year == 2019,
+         indicator == "Services") %>% pull(share)
+
+highmid_inc_agr_1991 = shares_change_over_time %>% 
+  filter(`Income Group` == "Upper middle income",
+         year == 1991,
+         indicator == "Agriculture") %>% pull(share)
+highmid_inc_agr_2019 = shares_change_over_time %>% 
+  filter(`Income Group` == "Upper middle income",
+         year == 2019,
+         indicator == "Agriculture") %>% pull(share)
+highmid_inc_ind_1991 = shares_change_over_time %>% 
+  filter(`Income Group` == "Upper middle income",
+         year == 1991,
+         indicator == "Industry") %>% pull(share)
+highmid_inc_ind_2019 = shares_change_over_time %>% 
+  filter(`Income Group` == "Upper middle income",
+         year == 2019,
+         indicator == "Industry") %>% pull(share)
+highmid_inc_srv_1991 = shares_change_over_time %>% 
+  filter(`Income Group` == "Upper middle income",
+         year == 1991,
+         indicator == "Services") %>% pull(share)
+highmid_inc_srv_2019 = shares_change_over_time %>% 
+  filter(`Income Group` == "Upper middle income",
+         year == 2019,
+         indicator == "Services") %>% pull(share)
+
+lowmid_inc_agr_1991 = shares_change_over_time %>% 
+  filter(`Income Group` == "Lower middle income",
+         year == 1991,
+         indicator == "Agriculture") %>% pull(share)
+lowmid_inc_agr_2019 = shares_change_over_time %>% 
+  filter(`Income Group` == "Lower middle income",
+         year == 2019,
+         indicator == "Agriculture") %>% pull(share)
+lowmid_inc_ind_1991 = shares_change_over_time %>% 
+  filter(`Income Group` == "Lower middle income",
+         year == 1991,
+         indicator == "Industry") %>% pull(share)
+lowmid_inc_ind_2019 = shares_change_over_time %>% 
+  filter(`Income Group` == "Lower middle income",
+         year == 2019,
+         indicator == "Industry") %>% pull(share)
+lowmid_inc_srv_1991 = shares_change_over_time %>% 
+  filter(`Income Group` == "Lower middle income",
+         year == 1991,
+         indicator == "Services") %>% pull(share)
+lowmid_inc_srv_2019 = shares_change_over_time %>% 
+  filter(`Income Group` == "Lower middle income",
+         year == 2019,
+         indicator == "Services") %>% pull(share)
+
+low_inc_agr_1991 = shares_change_over_time %>% 
+  filter(`Income Group` == "Low income",
+         year == 1991,
+         indicator == "Agriculture") %>% pull(share)
+low_inc_agr_2019 = shares_change_over_time %>% 
+  filter(`Income Group` == "Low income",
+         year == 2019,
+         indicator == "Agriculture") %>% pull(share)
+low_inc_ind_1991 = shares_change_over_time %>% 
+  filter(`Income Group` == "Low income",
+         year == 1991,
+         indicator == "Industry") %>% pull(share)
+low_inc_ind_2019 = shares_change_over_time %>% 
+  filter(`Income Group` == "Low income",
+         year == 2019,
+         indicator == "Industry") %>% pull(share)
+low_inc_srv_1991 = shares_change_over_time %>% 
+  filter(`Income Group` == "Low income",
+         year == 1991,
+         indicator == "Services") %>% pull(share)
+low_inc_srv_2019 = shares_change_over_time %>% 
+  filter(`Income Group` == "Low income",
+         year == 2019,
+         indicator == "Services") %>% pull(share)
+
+# percent change over time across sectors and income groups, precipitous decline in ag, increase in services
+tibble(
+  income_group = c("High income", "Upper middle income", "Lower middle income",
+                   "Low income"),
+  change_agriculture = c((high_inc_agr_2019 - high_inc_agr_1991)/high_inc_agr_1991,
+                         (highmid_inc_agr_2019 - highmid_inc_agr_1991)/highmid_inc_agr_1991,
+                         (lowmid_inc_agr_2019 - lowmid_inc_agr_1991)/lowmid_inc_agr_1991,
+                         (low_inc_agr_2019 - low_inc_agr_1991)/low_inc_agr_1991),
+  change_industry = c((high_inc_ind_2019 - high_inc_ind_1991)/high_inc_ind_1991,
+                         (highmid_inc_ind_2019 - highmid_inc_ind_1991)/highmid_inc_ind_1991,
+                         (lowmid_inc_ind_2019 - lowmid_inc_ind_1991)/lowmid_inc_ind_1991,
+                         (low_inc_ind_2019 - low_inc_ind_1991)/low_inc_ind_1991),
+  change_services = c((high_inc_srv_2019 - high_inc_srv_1991)/high_inc_srv_1991,
+                         (highmid_inc_srv_2019 - highmid_inc_srv_1991)/highmid_inc_srv_1991,
+                         (lowmid_inc_srv_2019 - lowmid_inc_srv_1991)/lowmid_inc_srv_1991,
+                         (low_inc_srv_2019 - low_inc_srv_1991)/low_inc_srv_1991)
+)
+```
+```{r calculate-boxplot}
+# variance in each group and each time period
+summary_trinity_time_income_group <- summary_trinity_time_income_group %>%
+  mutate(income_group_order = case_when( # order the income groups
+    `Income Group` == "Low income" ~ 1,
+    `Income Group` == "Lower middle income" ~ 2,
+    `Income Group` == "Upper middle income" ~ 3,
+    `Income Group` == "High income" ~ 4
+  ),
+  Indicator = as.factor(case_when(
+              `Indicator Code` == "SL.AGR.EMPL.ZS" ~ "Agriculture",
+              `Indicator Code` == "SL.IND.EMPL.ZS" ~ "Industry",
+              `Indicator Code` == "SL.SRV.EMPL.ZS" ~ "Services"
+            )))
+
+ninteties_boxplot <- summary_trinity_time_income_group %>%
+  ggplot(aes(y = `90s`, x = fct_reorder(.f = summary_trinity_time_income_group$`Income Group`, .x = summary_trinity_time_income_group$income_group_order), colour=Indicator)) +
+  geom_boxplot() +
+  labs(x = "Income Group", y = "Share of Employment",
+       title = "90s Distribution of Emp. by Sector by Income Group") +
+  guides(fill=guide_legend(title="Sector")) +
+  theme_bw()
+  
+millenium_boxplot <- summary_trinity_time_income_group %>%
+  ggplot(aes(y = `00s`, x = fct_reorder(.f = summary_trinity_time_income_group$`Income Group`, .x = summary_trinity_time_income_group$income_group_order), colour=Indicator)) +
+  geom_boxplot() +
+  labs(x = "Income Group", y = "Share of Employment",
+       title = "00s Distribution of Emp. by Sector by Income Group") +
+  guides(fill=guide_legend(title="Sector")) +
+  theme_bw()
+  
+tens_boxplot <- summary_trinity_time_income_group %>%
+  ggplot(aes(y = `10s`, x = fct_reorder(.f = summary_trinity_time_income_group$`Income Group`, .x = summary_trinity_time_income_group$income_group_order), colour=Indicator)) +
+  geom_boxplot() +
+  labs(x = "Income Group", y = "Share of Employment",
+       title = "10s Distribution of Emp. by Sector by Income Group") +
+  guides(fill=guide_legend(title="Sector")) +
+  theme_bw()
+```
+```{r plot-boxplot}
+# boxplot(ninteties_boxplot,
+#         millenium_boxplot,
+#         tens_boxplot,
+#         ncol=1)
+
+# you see that high income economies are almost universally not agricultural
+# moreover, even though there is variation, there isn't even much overlap in the 25-75 middle split of income grop
+
+ninteties_boxplot
+millenium_boxplot
+tens_boxplot
+```
+
+```{r calc-observations}
+# calculate number of observations to work with 
+trinity_filtered <- wdi_country %>% 
+  filter(!(is.na(`Currency Unit`))) %>% # remove regional groupings
+  select(`Short Name`, `Income Group`) %>%
+  inner_join(holy_trinity, by = c("Short Name" = "Country Name")) %>%
+  select(-`Indicator Name`, -`Country Code`, -`2020`, -`...66`, -(`1960`:`1990`)) %>%
+  drop_na()
+
+trinity_filtered
+# 516 rows, which means 172 countries with data from 1991-2019 (29 years of data)
+```
+
+```{r}
+# get data of employment shares and GDP
+gdp_pcap_ppp_countries <- wdi_raw %>% 
+  filter(`Indicator Code` %in% c("NY.GDP.PCAP.PP.CD")) %>%
+  inner_join(
+    (wdi_country %>% 
+  filter(!(is.na(`Currency Unit`))) %>% # remove regional groupings
+  select(`Short Name`, `Income Group`)),
+    by = c("Country Name" = "Short Name")
+  ) %>%
+  select(`1991`:`2019`, `Country Name`, `Income Group`, `Indicator Code`) %>%
+  rename(`Short Name` = `Country Name`)
+
+within_model_data <- rbind(trinity_filtered, gdp_pcap_ppp_countries) %>%
+  arrange(`Short Name`)
+
+# remove the countries without economy share data
+within_model_data <- 
+  within_model_data %>% group_by(`Short Name`) %>% 
+  summarise(count = n()) %>%
+  ungroup() %>% 
+  filter(count > 3) %>%
+  select(-count) %>%
+  inner_join(within_model_data,
+             by = c("Short Name" = "Short Name"))
+
+# value imputation
+# replace all NA GDP values with the average GDP for the average in that income group for that year
+average_GDP_stats <- within_model_data %>% group_by(`Income Group`) %>%
+  filter(`Indicator Code` == "NY.GDP.PCAP.PP.CD") %>%
+  summarise(`1991` = mean(`1991`, na.rm=TRUE),`1992` = mean(`1992`, na.rm=TRUE),
+            `1993` = mean(`1993`, na.rm=TRUE),`1994` = mean(`1994`, na.rm=TRUE),
+            `1995` = mean(`1995`, na.rm=TRUE),`1996` = mean(`1996`, na.rm=TRUE),
+            `1997` = mean(`1997`, na.rm=TRUE),`1998` = mean(`1998`, na.rm=TRUE),
+            `1999` = mean(`1999`, na.rm=TRUE),`2000` = mean(`2000`, na.rm=TRUE),
+            `2001` = mean(`2001`, na.rm=TRUE),`2002` = mean(`2002`, na.rm=TRUE),
+            `2003` = mean(`2003`, na.rm=TRUE),`2004` = mean(`2004`, na.rm=TRUE),
+            `2005` = mean(`2005`, na.rm=TRUE),`2006` = mean(`2006`, na.rm=TRUE),
+            `2007` = mean(`2007`, na.rm=TRUE),`2008` = mean(`2008`, na.rm=TRUE),
+            `2009` = mean(`2009`, na.rm=TRUE),`2010` = mean(`2010`, na.rm=TRUE),
+            `2011` = mean(`2011`, na.rm=TRUE),`2012` = mean(`2012`, na.rm=TRUE),
+            `2013` = mean(`2013`, na.rm=TRUE),`2014` = mean(`2014`, na.rm=TRUE),
+            `2015` = mean(`2015`, na.rm=TRUE),`2016` = mean(`2016`, na.rm=TRUE),
+            `2017` = mean(`2017`, na.rm=TRUE),`2018` = mean(`2018`, na.rm=TRUE),
+            `2019` = mean(`2019`, na.rm=TRUE))
+
+# impute the null values with averages  
+within_model_data_imputed <- within_model_data
+for(row in 4:nrow(within_model_data_imputed)) {
+  income_group <- as.character(within_model_data_imputed[row,2])
+  for (col in 4:32) {
+    if (is.na(within_model_data_imputed[row,col])) {
+      within_model_data_imputed[row,col] <-
+        (average_GDP_stats %>% filter(`Income Group` == income_group))[1,col-2]
+    }
+    col = col + 1
+  }
+  row = row + 4
+}
+```
+```{r}
+GDP_yearly_average <- average_GDP_stats %>% 
+  pivot_longer(-`Income Group`, names_to = "year", values_to = "gdp")
+GDP_yearly_average$year <- as.numeric(GDP_yearly_average$year)
+
+GDP_yearly_average %>% 
+  ggplot(aes(x = year, y = gdp, colour = `Income Group`)) +
+  geom_point()
+
+# You see that high income countries have grown a lot, but not low income countries
+# Potentially because low income countries that grow graduate to higher rankings, so you just have fewer countries
+# In these categories
+```
+# Part 2: Economic Structure and Income per Capita Growth
+
+## Recurrent Neural Network
+
+```{r}
+num_countries <- dim(within_model_data_imputed %>% group_by(`Short Name`) %>%
+  summarise(n()))[1]
+num_years <- 2019-1991 + 1
+num_features <- 4
+
+# set a random seed for reproducability
+set.seed(123)
+
+
+within_model_data_imputed <- 
+  within_model_data_imputed %>% arrange(`Short Name`, `Indicator Code`)
+# GDP, AGR, IND, SRV
+
+# put data into 3d array
+data_3d <- array(dim = c(num_countries, num_years, num_features))
+for (row in 1:nrow(within_model_data_imputed)) {
+  #print(row)
+  feature <- row %% num_features
+  if (feature == 0) {
+    feature <- num_features
+  }
+  #print(feature)
+  country = trunc((row+(num_features-1))/num_features)
+  for (col_year in 1:num_years) {
+    data_3d[country, col_year, feature] <- 
+      within_model_data_imputed[row, col_year+3] %>%
+      as.numeric()
+  }
+}
+
+within_model_data_imputed
+```
+
+
+```{r}
+# cut into sections
+# set some parameters for our model
+max_len <- 6 # the number of previous examples we'll look at
+stride <- 1 # striding between segments when selecting time series data
+segs_per_country <- (num_years - max_len)/stride
+
+# get a list of start indexes for our (overlapping) chunks
+data_segmented <- array(dim = c(num_countries*segs_per_country, 
+                                max_len+1, num_features))
+for(row in 1:(dim(data_3d)[1])) {
+  for(starting_col in 1:segs_per_country) {
+    seg_row <- ((row-1)*segs_per_country) + starting_col
+    data_segmented[seg_row,,] <- data_3d[row,starting_col:(starting_col+max_len),]
+  }
+}
+```
+
+```{r}
+# split into test and train
+X <- data_segmented[,,-1]
+y <- data_segmented[,,1]
+
+set.seed(43)
+train_indices <- sample(1:(dim(data_segmented)[1]), dim(data_segmented)[1]*.9)
+
+# training data
+X_train <- X[train_indices,,]
+y_train <- y[train_indices]
+
+# testing data
+X_test <- X[-train_indices,,]
+y_test <- y[-train_indices]
+```
+
+```{r}
+batch_size <- 64 # number of sequences to look at at one time during training
+total_epochs <- 100 # how many times we'll look @ the whole dataset while training our model
+
+model <- keras_model_sequential() %>%
+  layer_dense(input_shape = dim(X_train)[2:3], units = max_len) %>%
+  layer_simple_rnn(units = 64, activation = "relu", name="RNN_1",
+                   return_sequences = TRUE) %>%
+  layer_simple_rnn(units = 32, activation = "relu", name="RNN_2",
+                   return_sequences = TRUE) %>%
+  layer_simple_rnn(units = 32, activation = "relu", name="RNN_3",
+                   return_sequences = TRUE) %>%
+  layer_dense(units = 1)
+
+model %>% compile(loss = "mean_squared_error",   # which loss to use
+          optimizer = "RMSprop",     # how to optimize the loss
+          metrics = c("mean_absolute_error"))             # how to evaluate the fit
+```
+
+```{r}
+# Actually train our model! This step will take a while
+trained_model <- model %>% fit(
+    x = X_train, # sequence we're using for prediction 
+    y = y_train, # sequence we're predicting
+    batch_size = batch_size, # how many samples to pass to our model at a time
+    epochs = total_epochs, # how many times we'll look @ the whole dataset
+    validation_split = 0.33) # how much data to hold out for testing as we go along
+```
+
+```{r}
+# check if any null??
+mean(is.na(X_train[,1,1]))
+mean(is.na(X_train[,2,1]))
+mean(is.na(X_train[,3,1]))
+mean(is.na(X_train[,4,1]))
+mean(is.na(X_train[,5,1]))
+mean(is.na(X_train[,1,2]))
+mean(is.na(X_train[,2,2]))
+mean(is.na(X_train[,3,2]))
+mean(is.na(X_train[,4,2]))
+mean(is.na(X_train[,5,2]))
+mean(is.na(X_train[,1,3]))
+mean(is.na(X_train[,2,3]))
+mean(is.na(X_train[,3,3]))
+mean(is.na(X_train[,4,3]))
+mean(is.na(X_train[,5,3]))
+```
+
+```{r topic list}
+wdi_series %>% group_by(Topic) %>% summarise(n())
+wdi_series %>% group_by(`Indicator Name`) %>% summarise(n())
+
+code_employent_in_services = "SL.SRV.EMPL.ZS"
+"SL.IND.EMPL.ZS"
+"SL.AGR.EMPL.ZS"
+# GDP per capita PPP 
+"NY.GDP.PCAP.PP.CD"
+```
+
+Broad topics: 
+- Economic Policy & Debt, Education, Environment, Financial Sector, Gender, Health, Infrastructure, Poverty, Private Sector & Trade, Public Sector, Social Protection & Labor, World Bank, International Debt Statistics
