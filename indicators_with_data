@@ -1,0 +1,497 @@
+"Indicator Code" "Indicator Name" "over_25" "over_30" "over_35" "at_40"
+"1" "AG.CON.FERT.ZS" "Fertilizer consumption (kilograms per hectare of arable land)" 189 164 162 159
+"2" "AG.LND.AGRI.K2" "Agricultural land (sq. km)" 253 227 227 227
+"3" "AG.LND.AGRI.ZS" "Agricultural land (% of land area)" 253 222 221 221
+"4" "AG.LND.ARBL.HA" "Arable land (hectares)" 203 177 176 176
+"5" "AG.LND.ARBL.HA.PC" "Arable land (hectares per person)" 251 219 218 218
+"6" "AG.LND.ARBL.ZS" "Arable land (% of land area)" 251 220 218 218
+"7" "AG.LND.CREL.HA" "Land under cereal production (hectares)" 222 199 199 198
+"8" "AG.LND.CROP.ZS" "Permanent cropland (% of land area)" 241 211 210 209
+"9" "AG.LND.FRST.K2" "Forest area (sq. km)" 258 253 0 0
+"10" "AG.LND.FRST.ZS" "Forest area (% of land area)" 257 248 0 0
+"11" "AG.LND.TOTL.K2" "Land area (sq. km)" 263 259 259 259
+"12" "AG.PRD.CREL.MT" "Cereal production (metric tons)" 223 199 199 198
+"13" "AG.PRD.CROP.XD" "Crop production index (2014-2016 = 100)" 239 214 214 214
+"14" "AG.PRD.FOOD.XD" "Food production index (2014-2016 = 100)" 241 216 216 216
+"15" "AG.PRD.LVSK.XD" "Livestock production index (2014-2016 = 100)" 240 216 216 216
+"16" "AG.SRF.TOTL.K2" "Surface area (sq. km)" 262 258 258 258
+"17" "AG.YLD.CREL.KG" "Cereal yield (kg per hectare)" 222 199 199 197
+"18" "BG.GSR.NFSV.GD.ZS" "Trade in services (% of GDP)" 190 166 147 129
+"19" "BM.GSR.CMCP.ZS" "Communications, computer, etc. (% of service imports, BoP)" 183 160 149 128
+"20" "BM.GSR.FCTY.CD" "Primary income payments (BoP, current US$)" 182 150 138 118
+"21" "BM.GSR.GNFS.CD" "Imports of goods and services (BoP, current US$)" 186 163 152 131
+"22" "BM.GSR.INSF.ZS" "Insurance and financial services (% of service imports, BoP)" 178 156 142 115
+"23" "BM.GSR.MRCH.CD" "Goods imports (BoP, current US$)" 188 163 153 131
+"24" "BM.GSR.NFSV.CD" "Service imports (BoP, current US$)" 186 162 151 130
+"25" "BM.GSR.ROYL.CD" "Charges for the use of intellectual property, payments (BoP, current US$)" 166 151 130 113
+"26" "BM.GSR.TOTL.CD" "Imports of goods, services and primary income (BoP, current US$)" 188 163 152 131
+"27" "BM.GSR.TRAN.ZS" "Transport services (% of service imports, BoP)" 182 160 149 128
+"28" "BM.GSR.TRVL.ZS" "Travel services (% of service imports, BoP)" 179 156 146 122
+"29" "BM.KLT.DINV.CD.WD" "Foreign direct investment, net outflows (BoP, current US$)" 202 180 168 154
+"30" "BM.KLT.DINV.WD.GD.ZS" "Foreign direct investment, net outflows (% of GDP)" 196 171 156 140
+"31" "BM.TRF.PRVT.CD" "Secondary income, other sectors, payments (BoP, current US$)" 173 148 130 110
+"32" "BM.TRF.PWKR.CD.DT" "Personal remittances, paid (current US$)" 184 152 132 114
+"33" "BX.GRT.EXTA.CD.WD" "Grants, excluding technical cooperation (BoP, current US$)" 164 126 121 115
+"34" "BX.GRT.TECH.CD.WD" "Technical cooperation grants (BoP, current US$)" 164 123 118 113
+"35" "BX.GSR.CMCP.ZS" "Communications, computer, etc. (% of service exports, BoP)" 184 161 149 124
+"36" "BX.GSR.FCTY.CD" "Primary income receipts (BoP, current US$)" 177 150 138 117
+"37" "BX.GSR.GNFS.CD" "Exports of goods and services (BoP, current US$)" 184 161 151 129
+"38" "BX.GSR.INSF.ZS" "Insurance and financial services (% of service exports, BoP)" 175 156 138 110
+"39" "BX.GSR.MRCH.CD" "Goods exports (BoP, current US$)" 183 160 150 126
+"40" "BX.GSR.NFSV.CD" "Service exports (BoP, current US$)" 188 162 152 131
+"41" "BX.GSR.ROYL.CD" "Charges for the use of intellectual property, receipts (BoP, current US$)" 157 136 110 101
+"42" "BX.GSR.TOTL.CD" "Exports of goods, services and primary income (BoP, current US$)" 183 161 150 128
+"43" "BX.GSR.TRAN.ZS" "Transport services (% of service exports, BoP)" 180 155 138 114
+"44" "BX.GSR.TRVL.ZS" "Travel services (% of service exports, BoP)" 177 153 144 119
+"45" "BX.KLT.DINV.CD.WD" "Foreign direct investment, net inflows (BoP, current US$)" 228 207 204 197
+"46" "BX.KLT.DINV.WD.GD.ZS" "Foreign direct investment, net inflows (% of GDP)" 212 193 184 174
+"47" "BX.PEF.TOTL.CD.WD" "Portfolio equity, net inflows (BoP, current US$)" 167 146 131 117
+"48" "BX.TRF.CURR.CD" "Secondary income receipts (BoP, current US$)" 179 149 137 116
+"49" "BX.TRF.PWKR.CD.DT" "Personal remittances, received (current US$)" 191 159 141 126
+"50" "BX.TRF.PWKR.DT.GD.ZS" "Personal remittances, received (% of GDP)" 186 148 128 107
+"51" "DC.DAC.AUTL.CD" "Net bilateral aid flows from DAC donors, Austria (current US$)" 154 129 118 110
+"52" "DC.DAC.CANL.CD" "Net bilateral aid flows from DAC donors, Canada (current US$)" 163 150 142 122
+"53" "DC.DAC.CECL.CD" "Net bilateral aid flows from DAC donors, European Union institutions (current US$)" 184 157 149 132
+"54" "DC.DAC.DEUL.CD" "Net bilateral aid flows from DAC donors, Germany (current US$)" 185 159 149 140
+"55" "DC.DAC.FRAL.CD" "Net bilateral aid flows from DAC donors, France (current US$)" 177 155 145 139
+"56" "DC.DAC.GBRL.CD" "Net bilateral aid flows from DAC donors, United Kingdom (current US$)" 179 150 135 123
+"57" "DC.DAC.JPNL.CD" "Net bilateral aid flows from DAC donors, Japan (current US$)" 193 163 156 137
+"58" "DC.DAC.TOTL.CD" "Net bilateral aid flows from DAC donors, Total (current US$)" 209 168 164 156
+"59" "DC.DAC.USAL.CD" "Net bilateral aid flows from DAC donors, United States (current US$)" 168 136 126 117
+"60" "DT.NFL.NIFC.CD" "IFC, private nonguaranteed (NFL, current US$)" 167 150 149 147
+"61" "DT.NFL.UNCF.CD" "Net official flows from UN agencies, UNICEF (current US$)" 155 140 134 133
+"62" "DT.NFL.UNDP.CD" "Net official flows from UN agencies, UNDP (current US$)" 183 161 152 146
+"63" "DT.NFL.UNFP.CD" "Net official flows from UN agencies, UNFPA (current US$)" 154 140 133 122
+"64" "DT.NFL.UNTA.CD" "Net official flows from UN agencies, UNTA (current US$)" 171 153 18 18
+"65" "DT.ODA.ALLD.CD" "Net official development assistance and official aid received (current US$)" 210 170 166 159
+"66" "DT.ODA.ALLD.KD" "Net official development assistance and official aid received (constant 2018 US$)" 210 170 166 159
+"67" "DT.ODA.ODAT.CD" "Net official development assistance received (current US$)" 188 170 166 159
+"68" "DT.ODA.ODAT.GN.ZS" "Net ODA received (% of GNI)" 169 148 135 125
+"69" "DT.ODA.ODAT.KD" "Net official development assistance received (constant 2018 US$)" 188 170 166 159
+"70" "DT.ODA.ODAT.PC.ZS" "Net ODA received per capita (current US$)" 188 170 166 159
+"71" "EG.EGY.PRIM.PP.KD" "Energy intensity level of primary energy (MJ/$2011 PPP GDP)" 182 0 0 0
+"72" "EG.ELC.ACCS.UR.ZS" "Access to electricity, urban (% of urban population)" 158 0 0 0
+"73" "EG.ELC.ACCS.ZS" "Access to electricity (% of population)" 157 0 0 0
+"74" "EG.ELC.COAL.ZS" "Electricity production from coal sources (% of total)" 179 157 155 155
+"75" "EG.ELC.FOSL.ZS" "Electricity production from oil, gas and coal sources (% of total)" 179 157 155 155
+"76" "EG.ELC.HYRO.ZS" "Electricity production from hydroelectric sources (% of total)" 179 157 155 155
+"77" "EG.ELC.LOSS.ZS" "Electric power transmission and distribution losses (% of output)" 159 158 156 155
+"78" "EG.ELC.NGAS.ZS" "Electricity production from natural gas sources (% of total)" 179 157 155 155
+"79" "EG.ELC.NUCL.ZS" "Electricity production from nuclear sources (% of total)" 161 156 155 155
+"80" "EG.ELC.PETR.ZS" "Electricity production from oil sources (% of total)" 179 157 155 155
+"81" "EG.ELC.RNEW.ZS" "Renewable electricity output (% of total electricity output)" 265 0 0 0
+"82" "EG.ELC.RNWX.KH" "Electricity production from renewable sources, excluding hydroelectric (kWh)" 180 160 158 158
+"83" "EG.ELC.RNWX.ZS" "Electricity production from renewable sources, excluding hydroelectric (% of total)" 179 157 155 155
+"84" "EG.FEC.RNEW.ZS" "Renewable energy consumption (% of total final energy consumption)" 251 0 0 0
+"85" "EG.IMP.CONS.ZS" "Energy imports, net (% of energy use)" 163 160 159 154
+"86" "EG.USE.COMM.CL.ZS" "Alternative and nuclear energy (% of total energy use)" 162 159 158 153
+"87" "EG.USE.COMM.FO.ZS" "Fossil fuel energy consumption (% of total)" 160 154 147 136
+"88" "EG.USE.CRNW.ZS" "Combustible renewables and waste (% of total energy)" 162 159 158 153
+"89" "EG.USE.ELEC.KH.PC" "Electric power consumption (kWh per capita)" 153 152 151 150
+"90" "EG.USE.PCAP.KG.OE" "Energy use (kg of oil equivalent per capita)" 155 152 151 145
+"91" "EN.ATM.CO2E.EG.ZS" "CO2 intensity (kg per kg of oil equivalent energy use)" 160 153 152 147
+"92" "EN.ATM.CO2E.GF.KT" "CO2 emissions from gaseous fuel consumption (kt)" 213 202 202 201
+"93" "EN.ATM.CO2E.GF.ZS" "CO2 emissions from gaseous fuel consumption (% of total)" 211 206 206 206
+"94" "EN.ATM.CO2E.KD.GD" "CO2 emissions (kg per 2015 US$ of GDP)" 208 177 172 152
+"95" "EN.ATM.CO2E.KT" "CO2 emissions (kt)" 239 205 205 205
+"96" "EN.ATM.CO2E.LF.KT" "CO2 emissions from liquid fuel consumption (kt)" 225 217 217 217
+"97" "EN.ATM.CO2E.LF.ZS" "CO2 emissions from liquid fuel consumption (% of total)" 211 206 206 206
+"98" "EN.ATM.CO2E.PC" "CO2 emissions (metric tons per capita)" 239 205 205 205
+"99" "EN.ATM.CO2E.PP.GD" "CO2 emissions (kg per PPP $ of GDP)" 205 0 0 0
+"100" "EN.ATM.CO2E.PP.GD.KD" "CO2 emissions (kg per 2017 PPP $ of GDP)" 205 0 0 0
+"101" "EN.ATM.CO2E.SF.KT" "CO2 emissions from solid fuel consumption (kt)" 208 196 196 196
+"102" "EN.ATM.CO2E.SF.ZS" "CO2 emissions from solid fuel consumption (% of total)" 211 206 206 206
+"103" "EN.ATM.GHGO.KT.CE" "Other greenhouse gas emissions, HFC, PFC and SF6 (thousand metric tons of CO2 equivalent)" 230 228 228 219
+"104" "EN.ATM.GHGT.KT.CE" "Total greenhouse gas emissions (kt of CO2 equivalent)" 239 230 230 224
+"105" "EN.ATM.METH.AG.KT.CE" "Agricultural methane emissions (thousand metric tons of CO2 equivalent)" 239 239 239 239
+"106" "EN.ATM.METH.AG.ZS" "Agricultural methane emissions (% of total)" 233 232 0 0
+"107" "EN.ATM.METH.EG.KT.CE" "Methane emissions in energy sector (thousand metric tons of CO2 equivalent)" 239 239 239 239
+"108" "EN.ATM.METH.EG.ZS" "Energy related methane emissions (% of total)" 233 232 0 0
+"109" "EN.ATM.METH.KT.CE" "Methane emissions (kt of CO2 equivalent)" 239 234 234 234
+"110" "EN.ATM.NOXE.AG.KT.CE" "Agricultural nitrous oxide emissions (thousand metric tons of CO2 equivalent)" 239 239 239 239
+"111" "EN.ATM.NOXE.AG.ZS" "Agricultural nitrous oxide emissions (% of total)" 229 229 0 0
+"112" "EN.ATM.NOXE.EG.KT.CE" "Nitrous oxide emissions in energy sector (thousand metric tons of CO2 equivalent)" 239 239 239 239
+"113" "EN.ATM.NOXE.EG.ZS" "Nitrous oxide emissions in energy sector (% of total)" 229 229 0 0
+"114" "EN.ATM.NOXE.KT.CE" "Nitrous oxide emissions (thousand metric tons of CO2 equivalent)" 238 234 234 234
+"115" "EN.CO2.BLDG.ZS" "CO2 emissions from residential buildings and commercial and public services (% of total fuel combustion)" 162 160 159 159
+"116" "EN.CO2.ETOT.ZS" "CO2 emissions from electricity and heat production, total (% of total fuel combustion)" 162 160 159 159
+"117" "EN.CO2.MANF.ZS" "CO2 emissions from manufacturing industries and construction (% of total fuel combustion)" 162 160 159 159
+"118" "EN.CO2.OTHX.ZS" "CO2 emissions from other sectors, excluding residential buildings and commercial and public services (% of total fuel combustion)" 162 160 159 159
+"119" "EN.CO2.TRAN.ZS" "CO2 emissions from transport (% of total fuel combustion)" 162 160 159 159
+"120" "EN.POP.DNST" "Population density (people per sq. km of land area)" 263 259 258 258
+"121" "EN.URB.LCTY" "Population in largest city" 153 153 153 153
+"122" "EN.URB.LCTY.UR.ZS" "Population in the largest city (% of urban population)" 197 197 196 196
+"123" "EN.URB.MCTY.TL.ZS" "Population in urban agglomerations of more than 1 million (% of total population)" 159 159 159 159
+"124" "ER.FSH.AQUA.MT" "Aquaculture production (metric tons)" 222 213 177 174
+"125" "ER.FSH.CAPT.MT" "Capture fisheries production (metric tons)" 256 249 235 235
+"126" "ER.FSH.PROD.MT" "Total fisheries production (metric tons)" 258 251 240 240
+"127" "FD.AST.PRVT.GD.ZS" "Domestic credit to private sector by banks (% of GDP)" 192 168 154 142
+"128" "FI.RES.TOTL.CD" "Total reserves (includes gold, current US$)" 164 135 133 124
+"129" "FI.RES.TOTL.MO" "Total reserves in months of imports" 181 154 146 129
+"130" "FI.RES.XGLD.CD" "Total reserves minus gold (current US$)" 164 135 133 124
+"131" "FM.AST.PRVT.GD.ZS" "Monetary Sector credit to private sector (% GDP)" 191 166 153 144
+"132" "FM.LBL.BMNY.GD.ZS" "Broad money (% of GDP)" 191 166 152 143
+"133" "FP.CPI.TOTL" "Consumer price index (2010 = 100)" 156 132 122 111
+"134" "FP.CPI.TOTL.ZG" "Inflation, consumer prices (annual %)" 200 172 150 143
+"135" "FS.AST.CGOV.GD.ZS" "Claims on central government, etc. (% GDP)" 191 167 152 140
+"136" "FS.AST.PRVT.GD.ZS" "Domestic credit to private sector (% of GDP)" 152 135 119 105
+"137" "IS.AIR.DPRT" "Air transport, registered carrier departures worldwide" 203 169 158 145
+"138" "IS.AIR.GOOD.MT.K1" "Air transport, freight (million ton-km)" 190 159 149 137
+"139" "IS.AIR.PSGR" "Air transport, passengers carried" 202 169 158 145
+"140" "IT.CEL.SETS" "Mobile cellular subscriptions" 251 245 241 237
+"141" "IT.CEL.SETS.P2" "Mobile cellular subscriptions (per 100 people)" 249 245 241 235
+"142" "IT.MLT.MAIN" "Fixed telephone subscriptions" 252 249 237 220
+"143" "IT.MLT.MAIN.P2" "Fixed telephone subscriptions (per 100 people)" 252 249 237 216
+"144" "IT.NET.USER.ZS" "Individuals using the Internet (% of population)" 224 73 7 7
+"145" "MS.MIL.TOTL.P1" "Armed forces personnel, total" 203 130 0 0
+"146" "MS.MIL.TOTL.TF.ZS" "Armed forces personnel (% of total labor force)" 203 0 0 0
+"147" "MS.MIL.XPND.CD" "Military expenditure (current USD)" 186 159 137 126
+"148" "MS.MIL.XPND.GD.ZS" "Military expenditure (% of GDP)" 182 160 145 134
+"149" "NE.CON.GOVT.CD" "General government final consumption expenditure (current US$)" 199 171 151 144
+"150" "NE.CON.GOVT.CN" "General government final consumption expenditure (current LCU)" 154 134 116 112
+"151" "NE.CON.GOVT.ZS" "General government final consumption expenditure (% of GDP)" 198 171 151 146
+"152" "NE.CON.PRVT.CD" "Households and NPISHs Final consumption expenditure (current US$)" 199 170 149 144
+"153" "NE.CON.PRVT.CN" "Households and NPISHs Final consumption expenditure (current LCU)" 153 132 114 110
+"154" "NE.CON.PRVT.PP.CD" "Households and NPISHs Final consumption expenditure, PPP (current international $)" 167 84 0 0
+"155" "NE.CON.PRVT.PP.KD" "Households and NPISHs Final consumption expenditure, PPP (constant 2017 international $)" 154 112 0 0
+"156" "NE.CON.PRVT.ZS" "Households and NPISHs final consumption expenditure (% of GDP)" 197 169 149 144
+"157" "NE.CON.TOTL.CD" "Final consumption expenditure (current US$)" 202 173 153 147
+"158" "NE.CON.TOTL.CN" "Final consumption expenditure (current LCU)" 155 134 116 112
+"159" "NE.CON.TOTL.KD" "Final consumption expenditure (constant 2015 US$)" 158 127 108 107
+"160" "NE.CON.TOTL.ZS" "Final consumption expenditure (% of GDP)" 155 132 115 111
+"161" "NE.DAB.TOTL.CD" "Gross national expenditure (current US$)" 201 172 150 142
+"162" "NE.DAB.TOTL.CN" "Gross national expenditure (current LCU)" 155 133 115 107
+"163" "NE.DAB.TOTL.KD" "Gross national expenditure (constant 2015 US$)" 152 124 103 97
+"164" "NE.DAB.TOTL.ZS" "Gross national expenditure (% of GDP)" 155 131 114 106
+"165" "NE.EXP.GNFS.CD" "Exports of goods and services (current US$)" 209 179 157 154
+"166" "NE.EXP.GNFS.CN" "Exports of goods and services (current LCU)" 164 143 122 120
+"167" "NE.EXP.GNFS.KD" "Exports of goods and services (constant 2015 US$)" 152 133 114 111
+"168" "NE.EXP.GNFS.ZS" "Exports of goods and services (% of GDP)" 209 183 159 156
+"169" "NE.GDI.FTOT.CD" "Gross fixed capital formation (current US$)" 193 166 147 132
+"170" "NE.GDI.FTOT.CN" "Gross fixed capital formation (current LCU)" 151 130 112 103
+"171" "NE.GDI.FTOT.ZS" "Gross fixed capital formation (% of GDP)" 193 167 148 136
+"172" "NE.GDI.TOTL.CD" "Gross capital formation (current US$)" 202 170 149 139
+"173" "NE.GDI.TOTL.CN" "Gross capital formation (current LCU)" 158 136 118 111
+"174" "NE.GDI.TOTL.KD" "Gross capital formation (constant 2015 US$)" 153 120 101 97
+"175" "NE.GDI.TOTL.ZS" "Gross capital formation (% of GDP)" 205 177 156 145
+"176" "NE.IMP.GNFS.CD" "Imports of goods and services (current US$)" 211 178 156 153
+"177" "NE.IMP.GNFS.CN" "Imports of goods and services (current LCU)" 164 143 122 120
+"178" "NE.IMP.GNFS.ZS" "Imports of goods and services (% of GDP)" 209 183 159 156
+"179" "NE.RSB.GNFS.CD" "External balance on goods and services (current US$)" 164 140 122 119
+"180" "NE.RSB.GNFS.CN" "External balance on goods and services (current LCU)" 164 143 122 120
+"181" "NE.RSB.GNFS.ZS" "External balance on goods and services (% of GDP)" 209 183 159 156
+"182" "NE.TRD.GNFS.ZS" "Trade (% of GDP)" 209 183 159 156
+"183" "NV.AGR.EMPL.KD" "Agriculture, forestry, and fishing, value added per worker (constant 2015 US$)" 160 0 0 0
+"184" "NV.AGR.TOTL.CD" "Agriculture, forestry, and fishing, value added (current US$)" 205 159 135 131
+"185" "NV.AGR.TOTL.CN" "Agriculture, forestry, and fishing, value added (current LCU)" 162 128 106 100
+"186" "NV.AGR.TOTL.KD" "Agriculture, forestry, and fishing, value added (constant 2015 US$)" 189 154 131 123
+"187" "NV.AGR.TOTL.KD.ZG" "Agriculture, forestry, and fishing, value added (annual % growth)" 170 141 131 112
+"188" "NV.AGR.TOTL.ZS" "Agriculture, forestry, and fishing, value added (% of GDP)" 204 164 136 129
+"189" "NV.IND.EMPL.KD" "Industry (including construction), value added per worker (constant 2015 US$)" 151 0 0 0
+"190" "NV.IND.MANF.CD" "Manufacturing, value added (current US$)" 169 125 106 102
+"191" "NV.IND.MANF.ZS" "Manufacturing, value added (% of GDP)" 171 132 111 104
+"192" "NV.IND.TOTL.CD" "Industry (including construction), value added (current US$)" 203 155 131 126
+"193" "NV.IND.TOTL.CN" "Industry (including construction), value added (current LCU)" 162 127 106 100
+"194" "NV.IND.TOTL.KD" "Industry (including construction), value added (constant 2015 US$)" 180 143 121 112
+"195" "NV.IND.TOTL.KD.ZG" "Industry (including construction), value added (annual % growth)" 160 132 120 102
+"196" "NV.IND.TOTL.ZS" "Industry (including construction), value added (% of GDP)" 203 162 136 127
+"197" "NV.MNF.TECH.ZS.UN" "Medium and high-tech manufacturing value added (% manufacturing value added)" 151 0 0 0
+"198" "NV.SRV.TOTL.CD" "Services, value added (current US$)" 194 146 119 111
+"199" "NV.SRV.TOTL.CN" "Services, value added (current LCU)" 154 118 95 88
+"200" "NV.SRV.TOTL.KD" "Services, value added (constant 2015 US$)" 174 131 107 101
+"201" "NV.SRV.TOTL.KD.ZG" "Services, value added (annual % growth)" 152 115 106 91
+"202" "NV.SRV.TOTL.ZS" "Services, value added (% of GDP)" 195 153 123 115
+"203" "NY.ADJ.AEDU.CD" "Adjusted savings: education expenditure (current US$)" 169 146 132 125
+"204" "NY.ADJ.AEDU.GN.ZS" "Adjusted savings: education expenditure (% of GNI)" 246 246 246 246
+"205" "NY.ADJ.DCO2.CD" "Adjusted savings: carbon dioxide damage (current US$)" 202 172 172 172
+"206" "NY.ADJ.DCO2.GN.ZS" "Adjusted savings: carbon dioxide damage (% of GNI)" 219 191 176 169
+"207" "NY.ADJ.DFOR.CD" "Adjusted savings: net forest depletion (current US$)" 173 155 155 155
+"208" "NY.ADJ.DFOR.GN.ZS" "Adjusted savings: net forest depletion (% of GNI)" 200 180 169 163
+"209" "NY.ADJ.DKAP.CD" "Adjusted savings: consumption of fixed capital (current US$)" 181 157 147 140
+"210" "NY.ADJ.DKAP.GN.ZS" "Adjusted savings: consumption of fixed capital (% of GNI)" 217 193 180 173
+"211" "NY.ADJ.DMIN.CD" "Adjusted savings: mineral depletion (current US$)" 217 217 217 217
+"212" "NY.ADJ.DMIN.GN.ZS" "Adjusted savings: mineral depletion (% of GNI)" 220 196 180 173
+"213" "NY.ADJ.DNGY.CD" "Adjusted savings: energy depletion (current US$)" 206 205 204 204
+"214" "NY.ADJ.DNGY.GN.ZS" "Adjusted savings: energy depletion (% of GNI)" 217 192 178 171
+"215" "NY.ADJ.DPEM.CD" "Adjusted savings: particulate emission damage (current US$)" 160 0 0 0
+"216" "NY.ADJ.DPEM.GN.ZS" "Adjusted savings: particulate emission damage (% of GNI)" 199 0 0 0
+"217" "NY.ADJ.DRES.GN.ZS" "Adjusted savings: natural resources depletion (% of GNI)" 197 180 168 162
+"218" "NY.ADJ.ICTR.GN.ZS" "Adjusted savings: gross savings (% of GNI)" 153 134 119 95
+"219" "NY.ADJ.NNAT.GN.ZS" "Adjusted savings: net national savings (% of GNI)" 153 134 119 95
+"220" "NY.ADJ.NNTY.CD" "Adjusted net national income (current US$)" 196 173 158 151
+"221" "NY.ADJ.NNTY.PC.CD" "Adjusted net national income per capita (current US$)" 196 173 158 151
+"222" "NY.GDP.COAL.RT.ZS" "Coal rents (% of GDP)" 221 197 187 180
+"223" "NY.GDP.DEFL.KD.ZG" "Inflation, GDP deflator (annual %)" 225 203 187 176
+"224" "NY.GDP.DEFL.KD.ZG.AD" "Inflation, GDP deflator: linked series (annual %)" 172 142 0 0
+"225" "NY.GDP.DEFL.ZS" "GDP deflator (base year varies by country)" 187 167 145 137
+"226" "NY.GDP.DEFL.ZS.AD" "GDP deflator: linked series (base year varies by country)" 183 162 0 0
+"227" "NY.GDP.DISC.CN" "Discrepancy in expenditure estimate of GDP (current LCU)" 154 131 113 105
+"228" "NY.GDP.FCST.CD" "Gross value added at basic prices (GVA) (current US$)" 180 152 130 128
+"229" "NY.GDP.FCST.KD" "Gross value added at basic prices (GVA) (constant 2015 US$)" 161 143 124 116
+"230" "NY.GDP.FRST.RT.ZS" "Forest rents (% of GDP)" 231 208 195 188
+"231" "NY.GDP.MINR.RT.ZS" "Mineral rents (% of GDP)" 231 208 195 188
+"232" "NY.GDP.MKTP.CD" "GDP (current US$)" 238 218 193 186
+"233" "NY.GDP.MKTP.CN" "GDP (current LCU)" 192 175 153 147
+"234" "NY.GDP.MKTP.CN.AD" "GDP: linked series (current LCU)" 183 162 0 0
+"235" "NY.GDP.MKTP.KD" "GDP (constant 2015 US$)" 228 211 188 180
+"236" "NY.GDP.MKTP.KD.ZG" "GDP growth (annual %)" 223 204 188 178
+"237" "NY.GDP.MKTP.KN" "GDP (constant LCU)" 187 168 146 138
+"238" "NY.GDP.MKTP.PP.CD" "GDP, PPP (current international $)" 222 196 0 0
+"239" "NY.GDP.MKTP.PP.KD" "GDP, PPP (constant 2017 international $)" 222 198 0 0
+"240" "NY.GDP.NGAS.RT.ZS" "Natural gas rents (% of GDP)" 225 204 190 181
+"241" "NY.GDP.PCAP.CD" "GDP per capita (current US$)" 238 218 193 186
+"242" "NY.GDP.PCAP.CN" "GDP per capita (current LCU)" 192 175 153 147
+"243" "NY.GDP.PCAP.KD" "GDP per capita (constant 2015 US$)" 227 211 188 180
+"244" "NY.GDP.PCAP.KD.ZG" "GDP per capita growth (annual %)" 222 204 188 178
+"245" "NY.GDP.PCAP.KN" "GDP per capita (constant LCU)" 186 168 146 138
+"246" "NY.GDP.PCAP.PP.CD" "GDP per capita, PPP (current international $)" 221 196 0 0
+"247" "NY.GDP.PCAP.PP.KD" "GDP per capita, PPP (constant 2017 international $)" 221 198 0 0
+"248" "NY.GDP.PETR.RT.ZS" "Oil rents (% of GDP)" 225 204 190 183
+"249" "NY.GDP.TOTL.RT.ZS" "Total natural resources rents (% of GDP)" 231 208 195 187
+"250" "NY.GDS.TOTL.CD" "Gross domestic savings (current US$)" 202 171 152 146
+"251" "NY.GDS.TOTL.CN" "Gross domestic savings (current LCU)" 155 132 115 111
+"252" "NY.GDS.TOTL.ZS" "Gross domestic savings (% of GDP)" 200 172 152 147
+"253" "NY.GNP.ATLS.CD" "GNI, Atlas method (current US$)" 212 178 163 143
+"254" "NY.GNP.MKTP.CD" "GNI (current US$)" 227 199 177 171
+"255" "NY.GNP.MKTP.CN" "GNI (current LCU)" 181 155 137 130
+"256" "NY.GNP.MKTP.CN.AD" "GNI: linked series (current LCU)" 170 136 0 0
+"257" "NY.GNP.MKTP.PP.CD" "GNI, PPP (current international $)" 213 180 0 0
+"258" "NY.GNP.PCAP.CD" "GNI per capita, Atlas method (current US$)" 211 178 163 143
+"259" "NY.GNP.PCAP.CN" "GNI per capita (current LCU)" 181 155 137 130
+"260" "NY.GNP.PCAP.PP.CD" "GNI per capita, PPP (current international $)" 212 180 0 0
+"261" "NY.GNS.ICTR.GN.ZS" "Gross savings (% of GNI)" 161 134 120 102
+"262" "NY.GNS.ICTR.ZS" "Gross savings (% of GDP)" 153 124 112 88
+"263" "NY.GSR.NFCY.CD" "Net primary income (Net income from abroad) (current US$)" 167 145 129 124
+"264" "NY.GSR.NFCY.CN" "Net primary income (Net income from abroad) (current LCU)" 168 147 130 125
+"265" "PA.NUS.ATLS" "DEC alternative conversion factor (LCU per US$)" 197 189 169 162
+"266" "PA.NUS.FCRF" "Official exchange rate (LCU per US$, period average)" 173 157 151 148
+"267" "PA.NUS.PPP" "PPP conversion factor, GDP (LCU per international $)" 178 154 0 0
+"268" "PA.NUS.PPPC.RF" "Price level ratio of PPP conversion factor (GDP) to market exchange rate" 177 145 0 0
+"269" "SE.ENR.PRIM.FM.ZS" "School enrollment, primary (gross), gender parity index (GPI)" 200 178 149 125
+"270" "SE.ENR.PRSC.FM.ZS" "School enrollment, primary and secondary (gross), gender parity index (GPI)" 155 123 101 75
+"271" "SE.ENR.SECO.FM.ZS" "School enrollment, secondary (gross), gender parity index (GPI)" 159 130 103 80
+"272" "SE.PRE.ENRR" "School enrollment, preprimary (% gross)" 156 143 120 101
+"273" "SE.PRM.AGES" "Primary school starting age (years)" 204 204 204 202
+"274" "SE.PRM.DURS" "Primary education, duration (years)" 251 251 251 249
+"275" "SE.PRM.ENRL" "Primary education, pupils" 213 201 178 153
+"276" "SE.PRM.ENRL.FE.ZS" "Primary education, pupils (% female)" 203 171 149 115
+"277" "SE.PRM.ENRL.TC.ZS" "Pupil-teacher ratio, primary" 155 129 109 85
+"278" "SE.PRM.ENRR" "School enrollment, primary (% gross)" 208 193 170 145
+"279" "SE.PRM.ENRR.FE" "School enrollment, primary, female (% gross)" 200 178 149 125
+"280" "SE.PRM.ENRR.MA" "School enrollment, primary, male (% gross)" 200 178 149 125
+"281" "SE.PRM.PRIV.ZS" "School enrollment, primary, private (% of total primary)" 152 123 90 67
+"282" "SE.PRM.TCHR" "Primary education, teachers" 165 140 118 96
+"283" "SE.SEC.AGES" "Lower secondary school starting age (years)" 200 200 200 200
+"284" "SE.SEC.DURS" "Secondary education, duration (years)" 247 247 247 247
+"285" "SE.SEC.ENRL" "Secondary education, pupils" 180 155 125 104
+"286" "SE.SEC.ENRL.FE.ZS" "Secondary education, pupils (% female)" 151 129 101 72
+"287" "SE.SEC.ENRL.GC" "Secondary education, general pupils" 198 173 142 110
+"288" "SE.SEC.ENRL.GC.FE.ZS" "Secondary education, general pupils (% female)" 183 151 122 90
+"289" "SE.SEC.ENRL.VO" "Secondary education, vocational pupils" 160 137 103 75
+"290" "SE.SEC.ENRR" "School enrollment, secondary (% gross)" 176 149 122 99
+"291" "SE.SEC.ENRR.FE" "School enrollment, secondary, female (% gross)" 159 130 103 80
+"292" "SE.SEC.ENRR.MA" "School enrollment, secondary, male (% gross)" 159 130 103 80
+"293" "SE.TER.ENRR" "School enrollment, tertiary (% gross)" 158 137 115 92
+"294" "SG.LAW.INDX" "Women Business and the Law Index Score (scale 1-100)" 189 189 189 189
+"295" "SH.DTH.0509" "Number of deaths ages 5-9 years" 241 0 0 0
+"296" "SH.DTH.1014" "Number of deaths ages 10-14 years" 241 0 0 0
+"297" "SH.DTH.1519" "Number of deaths ages 15-19 years" 241 0 0 0
+"298" "SH.DTH.2024" "Number of deaths ages 20-24 years" 241 0 0 0
+"299" "SH.DTH.IMRT" "Number of infant deaths" 241 195 184 170
+"300" "SH.DTH.MORT" "Number of under-five deaths" 241 187 170 161
+"301" "SH.DTH.NMRT" "Number of neonatal deaths" 241 156 142 126
+"302" "SH.DYN.0509" "Probability of dying among children ages 5-9 years (per 1,000)" 241 0 0 0
+"303" "SH.DYN.1014" "Probability of dying among adolescents ages 10-14 years (per 1,000)" 241 0 0 0
+"304" "SH.DYN.1519" "Probability of dying among adolescents ages 15-19 years (per 1,000)" 241 0 0 0
+"305" "SH.DYN.2024" "Probability of dying among youth ages 20-24 years (per 1,000)" 241 0 0 0
+"306" "SH.DYN.AIDS.FE.ZS" "Women's share of population ages 15+ living with HIV (%)" 152 149 0 0
+"307" "SH.DYN.AIDS.ZS" "Prevalence of HIV, total (% of population ages 15-49)" 159 159 0 0
+"308" "SH.DYN.MORT" "Mortality rate, under-5 (per 1,000 live births)" 241 195 187 174
+"309" "SH.DYN.MORT.FE" "Mortality rate, under-5, female (per 1,000 live births)" 241 194 186 173
+"310" "SH.DYN.MORT.MA" "Mortality rate, under-5, male (per 1,000 live births)" 241 194 186 173
+"311" "SH.DYN.NMRT" "Mortality rate, neonatal (per 1,000 live births)" 241 195 144 128
+"312" "SH.HIV.1524.FE.ZS" "Prevalence of HIV, female (% ages 15-24)" 155 155 0 0
+"313" "SH.HIV.1524.MA.ZS" "Prevalence of HIV, male (% ages 15-24)" 155 155 0 0
+"314" "SH.HIV.INCD.TL.P3" "Incidence of HIV, all (per 1,000 uninfected population)" 160 159 0 0
+"315" "SH.HIV.INCD.ZS" "Incidence of HIV, ages 15-49 (per 1,000 uninfected population ages 15-49)" 151 150 0 0
+"316" "SH.IMM.IDPT" "Immunization, DPT (% of children ages 12-23 months)" 234 206 193 146
+"317" "SH.IMM.MEAS" "Immunization, measles (% of children ages 12-23 months)" 233 204 186 113
+"318" "SL.AGR.EMPL.FE.ZS" "Employment in agriculture, female (% of female employment) (modeled ILO estimate)" 235 0 0 0
+"319" "SL.AGR.EMPL.MA.ZS" "Employment in agriculture, male (% of male employment) (modeled ILO estimate)" 235 0 0 0
+"320" "SL.AGR.EMPL.ZS" "Employment in agriculture (% of total employment) (modeled ILO estimate)" 235 0 0 0
+"321" "SL.EMP.1524.SP.FE.ZS" "Employment to population ratio, ages 15-24, female (%) (modeled ILO estimate)" 235 0 0 0
+"322" "SL.EMP.1524.SP.MA.ZS" "Employment to population ratio, ages 15-24, male (%) (modeled ILO estimate)" 235 0 0 0
+"323" "SL.EMP.1524.SP.ZS" "Employment to population ratio, ages 15-24, total (%) (modeled ILO estimate)" 235 0 0 0
+"324" "SL.EMP.MPYR.FE.ZS" "Employers, female (% of female employment) (modeled ILO estimate)" 235 0 0 0
+"325" "SL.EMP.MPYR.MA.ZS" "Employers, male (% of male employment) (modeled ILO estimate)" 235 0 0 0
+"326" "SL.EMP.MPYR.ZS" "Employers, total (% of total employment) (modeled ILO estimate)" 235 0 0 0
+"327" "SL.EMP.SELF.FE.ZS" "Self-employed, female (% of female employment) (modeled ILO estimate)" 235 0 0 0
+"328" "SL.EMP.SELF.MA.ZS" "Self-employed, male (% of male employment) (modeled ILO estimate)" 235 0 0 0
+"329" "SL.EMP.SELF.ZS" "Self-employed, total (% of total employment) (modeled ILO estimate)" 235 0 0 0
+"330" "SL.EMP.TOTL.SP.FE.ZS" "Employment to population ratio, 15+, female (%) (modeled ILO estimate)" 235 0 0 0
+"331" "SL.EMP.TOTL.SP.MA.ZS" "Employment to population ratio, 15+, male (%) (modeled ILO estimate)" 235 0 0 0
+"332" "SL.EMP.TOTL.SP.ZS" "Employment to population ratio, 15+, total (%) (modeled ILO estimate)" 235 0 0 0
+"333" "SL.EMP.VULN.FE.ZS" "Vulnerable employment, female (% of female employment) (modeled ILO estimate)" 235 0 0 0
+"334" "SL.EMP.VULN.MA.ZS" "Vulnerable employment, male (% of male employment) (modeled ILO estimate)" 235 0 0 0
+"335" "SL.EMP.VULN.ZS" "Vulnerable employment, total (% of total employment) (modeled ILO estimate)" 235 0 0 0
+"336" "SL.EMP.WORK.FE.ZS" "Wage and salaried workers, female (% of female employment) (modeled ILO estimate)" 235 0 0 0
+"337" "SL.EMP.WORK.MA.ZS" "Wage and salaried workers, male (% of male employment) (modeled ILO estimate)" 235 0 0 0
+"338" "SL.EMP.WORK.ZS" "Wage and salaried workers, total (% of total employment) (modeled ILO estimate)" 235 0 0 0
+"339" "SL.FAM.WORK.FE.ZS" "Contributing family workers, female (% of female employment) (modeled ILO estimate)" 235 0 0 0
+"340" "SL.FAM.WORK.MA.ZS" "Contributing family workers, male (% of male employment) (modeled ILO estimate)" 235 0 0 0
+"341" "SL.FAM.WORK.ZS" "Contributing family workers, total (% of total employment) (modeled ILO estimate)" 235 0 0 0
+"342" "SL.GDP.PCAP.EM.KD" "GDP per person employed (constant 2017 PPP $)" 210 0 0 0
+"343" "SL.IND.EMPL.FE.ZS" "Employment in industry, female (% of female employment) (modeled ILO estimate)" 235 0 0 0
+"344" "SL.IND.EMPL.MA.ZS" "Employment in industry, male (% of male employment) (modeled ILO estimate)" 235 0 0 0
+"345" "SL.IND.EMPL.ZS" "Employment in industry (% of total employment) (modeled ILO estimate)" 235 0 0 0
+"346" "SL.SRV.EMPL.FE.ZS" "Employment in services, female (% of female employment) (modeled ILO estimate)" 235 0 0 0
+"347" "SL.SRV.EMPL.MA.ZS" "Employment in services, male (% of male employment) (modeled ILO estimate)" 235 0 0 0
+"348" "SL.SRV.EMPL.ZS" "Employment in services (% of total employment) (modeled ILO estimate)" 235 0 0 0
+"349" "SL.TLF.ACTI.1524.FE.ZS" "Labor force participation rate for ages 15-24, female (%) (modeled ILO estimate)" 235 0 0 0
+"350" "SL.TLF.ACTI.1524.MA.ZS" "Labor force participation rate for ages 15-24, male (%) (modeled ILO estimate)" 235 0 0 0
+"351" "SL.TLF.ACTI.1524.ZS" "Labor force participation rate for ages 15-24, total (%) (modeled ILO estimate)" 235 0 0 0
+"352" "SL.TLF.ACTI.FE.ZS" "Labor force participation rate, female (% of female population ages 15-64) (modeled ILO estimate)" 235 0 0 0
+"353" "SL.TLF.ACTI.MA.ZS" "Labor force participation rate, male (% of male population ages 15-64) (modeled ILO estimate)" 235 0 0 0
+"354" "SL.TLF.ACTI.ZS" "Labor force participation rate, total (% of total population ages 15-64) (modeled ILO estimate)" 235 0 0 0
+"355" "SL.TLF.CACT.FE.ZS" "Labor force participation rate, female (% of female population ages 15+) (modeled ILO estimate)" 235 0 0 0
+"356" "SL.TLF.CACT.FM.ZS" "Ratio of female to male labor force participation rate (%) (modeled ILO estimate)" 235 0 0 0
+"357" "SL.TLF.CACT.MA.ZS" "Labor force participation rate, male (% of male population ages 15+) (modeled ILO estimate)" 235 0 0 0
+"358" "SL.TLF.CACT.ZS" "Labor force participation rate, total (% of total population ages 15+) (modeled ILO estimate)" 235 235 0 0
+"359" "SL.TLF.TOTL.FE.ZS" "Labor force, female (% of total labor force)" 235 0 0 0
+"360" "SL.TLF.TOTL.IN" "Labor force, total" 235 234 0 0
+"361" "SL.UEM.1524.FE.ZS" "Unemployment, youth female (% of female labor force ages 15-24) (modeled ILO estimate)" 235 0 0 0
+"362" "SL.UEM.1524.MA.ZS" "Unemployment, youth male (% of male labor force ages 15-24) (modeled ILO estimate)" 235 0 0 0
+"363" "SL.UEM.1524.ZS" "Unemployment, youth total (% of total labor force ages 15-24) (modeled ILO estimate)" 235 0 0 0
+"364" "SL.UEM.TOTL.FE.ZS" "Unemployment, female (% of female labor force) (modeled ILO estimate)" 235 0 0 0
+"365" "SL.UEM.TOTL.MA.ZS" "Unemployment, male (% of male labor force) (modeled ILO estimate)" 235 0 0 0
+"366" "SL.UEM.TOTL.ZS" "Unemployment, total (% of total labor force) (modeled ILO estimate)" 235 0 0 0
+"367" "SM.POP.REFG" "Refugee population by country or territory of asylum" 186 159 97 84
+"368" "SM.POP.REFG.OR" "Refugee population by country or territory of origin" 200 141 67 49
+"369" "SP.ADO.TFRT" "Adolescent fertility rate (births per 1,000 women ages 15-19)" 242 242 242 242
+"370" "SP.DYN.AMRT.FE" "Mortality rate, adult, female (per 1,000 female adults)" 242 240 238 236
+"371" "SP.DYN.AMRT.MA" "Mortality rate, adult, male (per 1,000 male adults)" 242 240 238 236
+"372" "SP.DYN.CBRT.IN" "Birth rate, crude (per 1,000 people)" 250 246 244 242
+"373" "SP.DYN.CDRT.IN" "Death rate, crude (per 1,000 people)" 249 246 244 242
+"374" "SP.DYN.IMRT.FE.IN" "Mortality rate, infant, female (per 1,000 live births)" 241 194 186 173
+"375" "SP.DYN.IMRT.IN" "Mortality rate, infant (per 1,000 live births)" 241 195 187 174
+"376" "SP.DYN.IMRT.MA.IN" "Mortality rate, infant, male (per 1,000 live births)" 241 194 186 173
+"377" "SP.DYN.LE00.FE.IN" "Life expectancy at birth, female (years)" 245 243 242 240
+"378" "SP.DYN.LE00.IN" "Life expectancy at birth, total (years)" 245 243 242 240
+"379" "SP.DYN.LE00.MA.IN" "Life expectancy at birth, male (years)" 245 243 242 240
+"380" "SP.DYN.TFRT.IN" "Fertility rate, total (births per woman)" 244 242 242 240
+"381" "SP.DYN.TO65.FE.ZS" "Survival to age 65, female (% of cohort)" 242 242 242 242
+"382" "SP.DYN.TO65.MA.ZS" "Survival to age 65, male (% of cohort)" 242 242 242 242
+"383" "SP.POP.0004.FE.5Y" "Population ages 00-04, female (% of female population)" 242 242 242 241
+"384" "SP.POP.0004.MA.5Y" "Population ages 00-04, male (% of male population)" 242 242 242 241
+"385" "SP.POP.0014.FE.IN" "Population ages 0-14, female" 242 242 241 240
+"386" "SP.POP.0014.FE.ZS" "Population ages 0-14, female (% of female population)" 242 242 242 241
+"387" "SP.POP.0014.MA.IN" "Population ages 0-14, male" 242 242 241 240
+"388" "SP.POP.0014.MA.ZS" "Population ages 0-14, male (% of male population)" 242 242 242 241
+"389" "SP.POP.0014.TO" "Population ages 0-14, total" 242 242 241 240
+"390" "SP.POP.0014.TO.ZS" "Population ages 0-14 (% of total population)" 242 242 242 241
+"391" "SP.POP.0509.FE.5Y" "Population ages 05-09, female (% of female population)" 242 242 242 241
+"392" "SP.POP.0509.MA.5Y" "Population ages 05-09, male (% of male population)" 242 242 242 241
+"393" "SP.POP.1014.FE.5Y" "Population ages 10-14, female (% of female population)" 242 242 242 241
+"394" "SP.POP.1014.MA.5Y" "Population ages 10-14, male (% of male population)" 242 242 242 241
+"395" "SP.POP.1519.FE.5Y" "Population ages 15-19, female (% of female population)" 242 242 242 241
+"396" "SP.POP.1519.MA.5Y" "Population ages 15-19, male (% of male population)" 242 242 242 241
+"397" "SP.POP.1564.FE.IN" "Population ages 15-64, female" 242 242 241 240
+"398" "SP.POP.1564.FE.ZS" "Population ages 15-64, female (% of female population)" 242 242 242 241
+"399" "SP.POP.1564.MA.IN" "Population ages 15-64, male" 242 242 241 240
+"400" "SP.POP.1564.MA.ZS" "Population ages 15-64, male (% of male population)" 242 242 242 241
+"401" "SP.POP.1564.TO" "Population ages 15-64, total" 242 242 241 240
+"402" "SP.POP.1564.TO.ZS" "Population ages 15-64 (% of total population)" 242 242 242 241
+"403" "SP.POP.2024.FE.5Y" "Population ages 20-24, female (% of female population)" 242 242 242 241
+"404" "SP.POP.2024.MA.5Y" "Population ages 20-24, male (% of male population)" 242 242 242 241
+"405" "SP.POP.2529.FE.5Y" "Population ages 25-29, female (% of female population)" 242 242 242 241
+"406" "SP.POP.2529.MA.5Y" "Population ages 25-29, male (% of male population)" 242 242 242 241
+"407" "SP.POP.3034.FE.5Y" "Population ages 30-34, female (% of female population)" 242 242 242 241
+"408" "SP.POP.3034.MA.5Y" "Population ages 30-34, male (% of male population)" 242 242 242 241
+"409" "SP.POP.3539.FE.5Y" "Population ages 35-39, female (% of female population)" 242 242 242 241
+"410" "SP.POP.3539.MA.5Y" "Population ages 35-39, male (% of male population)" 242 242 242 241
+"411" "SP.POP.4044.FE.5Y" "Population ages 40-44, female (% of female population)" 242 242 242 241
+"412" "SP.POP.4044.MA.5Y" "Population ages 40-44, male (% of male population)" 242 242 242 241
+"413" "SP.POP.4549.FE.5Y" "Population ages 45-49, female (% of female population)" 242 242 242 241
+"414" "SP.POP.4549.MA.5Y" "Population ages 45-49, male (% of male population)" 242 242 242 241
+"415" "SP.POP.5054.FE.5Y" "Population ages 50-54, female (% of female population)" 242 242 242 241
+"416" "SP.POP.5054.MA.5Y" "Population ages 50-54, male (% of male population)" 242 242 242 241
+"417" "SP.POP.5559.FE.5Y" "Population ages 55-59, female (% of female population)" 242 242 242 241
+"418" "SP.POP.5559.MA.5Y" "Population ages 55-59, male (% of male population)" 242 242 242 241
+"419" "SP.POP.6064.FE.5Y" "Population ages 60-64, female (% of female population)" 242 242 242 241
+"420" "SP.POP.6064.MA.5Y" "Population ages 60-64, male (% of male population)" 242 242 242 241
+"421" "SP.POP.6569.FE.5Y" "Population ages 65-69, female (% of female population)" 242 242 242 241
+"422" "SP.POP.6569.MA.5Y" "Population ages 65-69, male (% of male population)" 242 242 242 241
+"423" "SP.POP.65UP.FE.IN" "Population ages 65 and above, female" 242 242 241 240
+"424" "SP.POP.65UP.FE.ZS" "Population ages 65 and above, female (% of female population)" 242 242 242 241
+"425" "SP.POP.65UP.MA.IN" "Population ages 65 and above, male" 242 242 241 240
+"426" "SP.POP.65UP.MA.ZS" "Population ages 65 and above, male (% of male population)" 242 242 242 241
+"427" "SP.POP.65UP.TO" "Population ages 65 and above, total" 242 242 241 240
+"428" "SP.POP.65UP.TO.ZS" "Population ages 65 and above (% of total population)" 242 242 242 241
+"429" "SP.POP.7074.FE.5Y" "Population ages 70-74, female (% of female population)" 242 242 242 241
+"430" "SP.POP.7074.MA.5Y" "Population ages 70-74, male (% of male population)" 242 242 242 241
+"431" "SP.POP.7579.FE.5Y" "Population ages 75-79, female (% of female population)" 242 242 242 241
+"432" "SP.POP.7579.MA.5Y" "Population ages 75-79, male (% of male population)" 242 242 242 241
+"433" "SP.POP.80UP.FE.5Y" "Population ages 80 and above, female (% of female population)" 242 242 242 241
+"434" "SP.POP.80UP.MA.5Y" "Population ages 80 and above, male (% of male population)" 242 242 242 241
+"435" "SP.POP.DPND" "Age dependency ratio (% of working-age population)" 242 242 241 240
+"436" "SP.POP.DPND.OL" "Age dependency ratio, old (% of working-age population)" 242 242 241 240
+"437" "SP.POP.DPND.YG" "Age dependency ratio, young (% of working-age population)" 242 242 241 240
+"438" "SP.POP.GROW" "Population growth (annual %)" 265 264 264 263
+"439" "SP.POP.TOTL" "Population, total" 265 265 264 263
+"440" "SP.POP.TOTL.FE.IN" "Population, female" 242 242 241 240
+"441" "SP.POP.TOTL.FE.ZS" "Population, female (% of total population)" 242 242 242 241
+"442" "SP.POP.TOTL.MA.IN" "Population, male" 242 242 241 240
+"443" "SP.POP.TOTL.MA.ZS" "Population, male (% of total population)" 242 242 242 241
+"444" "SP.RUR.TOTL" "Rural population" 263 263 262 261
+"445" "SP.RUR.TOTL.ZG" "Rural population growth (annual %)" 253 252 252 251
+"446" "SP.RUR.TOTL.ZS" "Rural population (% of total population)" 263 263 263 262
+"447" "SP.URB.GROW" "Urban population growth (annual %)" 263 262 262 261
+"448" "SP.URB.TOTL" "Urban population" 263 263 262 261
+"449" "SP.URB.TOTL.IN.ZS" "Urban population (% of total population)" 263 263 263 262
+"450" "TG.VAL.TOTL.GD.ZS" "Merchandise trade (% of GDP)" 230 201 188 183
+"451" "TM.VAL.AGRI.ZS.UN" "Agricultural raw materials imports (% of merchandise imports)" 163 124 94 75
+"452" "TM.VAL.FOOD.ZS.UN" "Food imports (% of merchandise imports)" 163 124 94 75
+"453" "TM.VAL.FUEL.ZS.UN" "Fuel imports (% of merchandise imports)" 163 124 94 75
+"454" "TM.VAL.INSF.ZS.WT" "Insurance and financial services (% of commercial service imports)" 178 156 142 115
+"455" "TM.VAL.MANF.ZS.UN" "Manufactures imports (% of merchandise imports)" 163 124 94 75
+"456" "TM.VAL.MMTL.ZS.UN" "Ores and metals imports (% of merchandise imports)" 162 124 94 75
+"457" "TM.VAL.MRCH.AL.ZS" "Merchandise imports from economies in the Arab World (% of total merchandise imports)" 215 186 175 154
+"458" "TM.VAL.MRCH.CD.WT" "Merchandise imports (current US$)" 239 212 208 207
+"459" "TM.VAL.MRCH.HI.ZS" "Merchandise imports from high-income economies (% of total merchandise imports)" 223 201 201 183
+"460" "TM.VAL.MRCH.OR.ZS" "Merchandise imports from low- and middle-income economies outside region (% of total merchandise imports)" 223 201 201 176
+"461" "TM.VAL.MRCH.R1.ZS" "Merchandise imports from low- and middle-income economies in East Asia & Pacific (% of total merchandise imports)" 223 200 199 176
+"462" "TM.VAL.MRCH.R2.ZS" "Merchandise imports from low- and middle-income economies in Europe & Central Asia (% of total merchandise imports)" 213 169 148 133
+"463" "TM.VAL.MRCH.R3.ZS" "Merchandise imports from low- and middle-income economies in Latin America & the Caribbean (% of total merchandise imports)" 217 193 183 168
+"464" "TM.VAL.MRCH.R4.ZS" "Merchandise imports from low- and middle-income economies in Middle East & North Africa (% of total merchandise imports)" 212 179 168 152
+"465" "TM.VAL.MRCH.R5.ZS" "Merchandise imports from low- and middle-income economies in South Asia (% of total merchandise imports)" 222 196 185 166
+"466" "TM.VAL.MRCH.R6.ZS" "Merchandise imports from low- and middle-income economies in Sub-Saharan Africa (% of total merchandise imports)" 215 189 178 164
+"467" "TM.VAL.MRCH.RS.ZS" "Merchandise imports by the reporting economy, residual (% of total merchandise imports)" 223 201 201 183
+"468" "TM.VAL.MRCH.WL.CD" "Merchandise imports by the reporting economy (current US$)" 223 201 201 183
+"469" "TM.VAL.MRCH.WR.ZS" "Merchandise imports from low- and middle-income economies within region (% of total merchandise imports)" 162 147 147 126
+"470" "TM.VAL.OTHR.ZS.WT" "Computer, communications and other services (% of commercial service imports)" 182 160 150 129
+"471" "TM.VAL.SERV.CD.WT" "Commercial service imports (current US$)" 185 161 150 129
+"472" "TM.VAL.TRAN.ZS.WT" "Transport services (% of commercial service imports)" 182 160 149 128
+"473" "TM.VAL.TRVL.ZS.WT" "Travel services (% of commercial service imports)" 179 156 146 122
+"474" "TX.MNF.TECH.ZS.UN" "Medium and high-tech exports (% manufactured exports)" 151 0 0 0
+"475" "TX.VAL.AGRI.ZS.UN" "Agricultural raw materials exports (% of merchandise exports)" 161 121 92 73
+"476" "TX.VAL.FOOD.ZS.UN" "Food exports (% of merchandise exports)" 162 122 92 74
+"477" "TX.VAL.INSF.ZS.WT" "Insurance and financial services (% of commercial service exports)" 175 156 138 110
+"478" "TX.VAL.MANF.ZS.UN" "Manufactures exports (% of merchandise exports)" 160 123 93 74
+"479" "TX.VAL.MMTL.ZS.UN" "Ores and metals exports (% of merchandise exports)" 154 117 91 73
+"480" "TX.VAL.MRCH.AL.ZS" "Merchandise exports to economies in the Arab World (% of total merchandise exports)" 213 184 172 146
+"481" "TX.VAL.MRCH.CD.WT" "Merchandise exports (current US$)" 240 213 209 208
+"482" "TX.VAL.MRCH.HI.ZS" "Merchandise exports to high-income economies (% of total merchandise exports)" 224 202 202 181
+"483" "TX.VAL.MRCH.OR.ZS" "Merchandise exports to low- and middle-income economies outside region (% of total merchandise exports)" 223 198 190 161
+"484" "TX.VAL.MRCH.R1.ZS" "Merchandise exports to low- and middle-income economies in East Asia & Pacific (% of total merchandise exports)" 219 186 175 151
+"485" "TX.VAL.MRCH.R2.ZS" "Merchandise exports to low- and middle-income economies in Europe & Central Asia (% of total merchandise exports)" 192 141 126 111
+"486" "TX.VAL.MRCH.R3.ZS" "Merchandise exports to low- and middle-income economies in Latin America & the Caribbean (% of total merchandise exports)" 205 175 160 142
+"487" "TX.VAL.MRCH.R4.ZS" "Merchandise exports to low- and middle-income economies in Middle East & North Africa (% of total merchandise exports)" 201 173 158 138
+"488" "TX.VAL.MRCH.R5.ZS" "Merchandise exports to low- and middle-income economies in South Asia (% of total merchandise exports)" 203 171 157 133
+"489" "TX.VAL.MRCH.R6.ZS" "Merchandise exports to low- and middle-income economies in Sub-Saharan Africa (% of total merchandise exports)" 210 183 173 154
+"490" "TX.VAL.MRCH.RS.ZS" "Merchandise exports by the reporting economy, residual (% of total merchandise exports)" 224 202 202 181
+"491" "TX.VAL.MRCH.WL.CD" "Merchandise exports by the reporting economy (current US$)" 224 202 202 181
+"492" "TX.VAL.MRCH.WR.ZS" "Merchandise exports to low- and middle-income economies within region (% of total merchandise exports)" 163 147 146 123
+"493" "TX.VAL.OTHR.ZS.WT" "Computer, communications and other services (% of commercial service exports)" 183 161 149 124
+"494" "TX.VAL.SERV.CD.WT" "Commercial service exports (current US$)" 188 163 152 131
+"495" "TX.VAL.TRAN.ZS.WT" "Transport services (% of commercial service exports)" 180 155 138 114
+"496" "TX.VAL.TRVL.ZS.WT" "Travel services (% of commercial service exports)" 177 153 144 119

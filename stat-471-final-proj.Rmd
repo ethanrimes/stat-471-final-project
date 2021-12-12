@@ -12,6 +12,8 @@ library(tidyverse)
 library(cowplot)
 library(rnn)
 library(caret)
+library(keras)
+library(plm)
 ```
 
 ```{r imports, cache = TRUE}
@@ -28,7 +30,10 @@ wdi_country <-
 wdi_series <- 
   read_csv("/Users/ethan/Documents/R/stat-471-final-project/WDI_csv/WDISeries.csv",
            col_names = TRUE)
-# integrate trade data
+# conflict 
+conflict_df <- 
+  read_csv("/Users/ethan/Documents/R/stat-471-final-project/conflict.csv",
+           col_names = TRUE)
 ```
 
 
@@ -434,15 +439,14 @@ GDP_yearly_average %>%
 # Potentially because low income countries that grow graduate to higher rankings, so you just have fewer countries
 # In these categories
 ```
-# Part 2: Economic Structure and Income per Capita Growth
 
-## Recurrent Neural Network
+## RNN: Continuous Regression on GDP per Capita
 
 ```{r}
 num_countries <- dim(within_model_data_imputed %>% group_by(`Short Name`) %>%
   summarise(n()))[1]
 num_years <- 2019-1991 + 1
-num_features <- 4
+num_features <- 4 # add the year
 
 # set a random seed for reproducability
 set.seed(123)
@@ -453,12 +457,12 @@ within_model_data_imputed <-
 # GDP, AGR, IND, SRV
 
 # put data into 3d array
-data_3d <- array(dim = c(num_countries, num_years, num_features))
+data_3d <- array(dim = c(num_countries, num_years, num_features+1)) # add year
 for (row in 1:nrow(within_model_data_imputed)) {
   #print(row)
-  feature <- row %% num_features
+  feature <- row %% num_features 
   if (feature == 0) {
-    feature <- num_features
+    feature <- num_features 
   }
   #print(feature)
   country = trunc((row+(num_features-1))/num_features)
@@ -469,20 +473,24 @@ for (row in 1:nrow(within_model_data_imputed)) {
   }
 }
 
-within_model_data_imputed
+# add year as a variable
+for (year in 1:num_years) {
+  data_3d[,year,5] <- year+1990
+}
+
 ```
 
 
 ```{r}
 # cut into sections
 # set some parameters for our model
-max_len <- 6 # the number of previous examples we'll look at
+max_len <- 4 # the number of previous examples we'll look at
 stride <- 1 # striding between segments when selecting time series data
 segs_per_country <- (num_years - max_len)/stride
 
 # get a list of start indexes for our (overlapping) chunks
 data_segmented <- array(dim = c(num_countries*segs_per_country, 
-                                max_len+1, num_features))
+                                max_len+1, num_features+1)) # add year
 for(row in 1:(dim(data_3d)[1])) {
   for(starting_col in 1:segs_per_country) {
     seg_row <- ((row-1)*segs_per_country) + starting_col
@@ -493,19 +501,19 @@ for(row in 1:(dim(data_3d)[1])) {
 
 ```{r}
 # split into test and train
-X <- data_segmented[,,-1]
-y <- data_segmented[,,1]
+X_RNN_continuous_GDP <- data_segmented[,,-1]
+y_RNN_continuous_GDP <- data_segmented[,,1]
 
 set.seed(43)
 train_indices <- sample(1:(dim(data_segmented)[1]), dim(data_segmented)[1]*.9)
 
 # training data
-X_train <- X[train_indices,,]
-y_train <- y[train_indices]
+X_train_RNN_continuous_GDP <- X_RNN_continuous_GDP[train_indices,,]
+y_train_RNN_continuous_GDP <- y_RNN_continuous_GDP[train_indices]
 
 # testing data
-X_test <- X[-train_indices,,]
-y_test <- y[-train_indices]
+X_test_RNN_continuous_GDP <- X_RNN_continuous_GDP[-train_indices,,]
+y_test_RNN_continuous_GDP <- y_RNN_continuous_GDP[-train_indices]
 ```
 
 ```{r}
@@ -513,12 +521,15 @@ batch_size <- 64 # number of sequences to look at at one time during training
 total_epochs <- 100 # how many times we'll look @ the whole dataset while training our model
 
 model <- keras_model_sequential() %>%
-  layer_dense(input_shape = dim(X_train)[2:3], units = max_len) %>%
-  layer_simple_rnn(units = 64, activation = "relu", name="RNN_1",
+  layer_dense(input_shape = dim(X_train_RNN_continuous_GDP)[2:3], units = max_len) %>%
+  layer_simple_rnn(units = 64, name="RNN_1",
+                   activation = "relu",
                    return_sequences = TRUE) %>%
-  layer_simple_rnn(units = 32, activation = "relu", name="RNN_2",
+  layer_simple_rnn(units = 32, name="RNN_2",
+                   activation = "relu",
                    return_sequences = TRUE) %>%
-  layer_simple_rnn(units = 32, activation = "relu", name="RNN_3",
+  layer_simple_rnn(units = 32, name="RNN_3",
+                   activation = "relu",
                    return_sequences = TRUE) %>%
   layer_dense(units = 1)
 
@@ -530,42 +541,1116 @@ model %>% compile(loss = "mean_squared_error",   # which loss to use
 ```{r}
 # Actually train our model! This step will take a while
 trained_model <- model %>% fit(
-    x = X_train, # sequence we're using for prediction 
-    y = y_train, # sequence we're predicting
+    x = X_train_RNN_continuous_GDP, # sequence we're using for prediction 
+    y = y_train_RNN_continuous_GDP, # sequence we're predicting
     batch_size = batch_size, # how many samples to pass to our model at a time
     epochs = total_epochs, # how many times we'll look @ the whole dataset
     validation_split = 0.33) # how much data to hold out for testing as we go along
 ```
 
+## RNN: Classification on Income Group
+
 ```{r}
-# check if any null??
-mean(is.na(X_train[,1,1]))
-mean(is.na(X_train[,2,1]))
-mean(is.na(X_train[,3,1]))
-mean(is.na(X_train[,4,1]))
-mean(is.na(X_train[,5,1]))
-mean(is.na(X_train[,1,2]))
-mean(is.na(X_train[,2,2]))
-mean(is.na(X_train[,3,2]))
-mean(is.na(X_train[,4,2]))
-mean(is.na(X_train[,5,2]))
-mean(is.na(X_train[,1,3]))
-mean(is.na(X_train[,2,3]))
-mean(is.na(X_train[,3,3]))
-mean(is.na(X_train[,4,3]))
-mean(is.na(X_train[,5,3]))
+income_group_names = tribble(
+  ~name, ~code,
+  "Low income", 0,
+  "Lower middle income", 1,
+  "Upper middle income", 2,
+  "High income", 3
+)
+classification_within_model <- within_model_data_imputed
+for (row in 1:nrow(classification_within_model)) {
+  if (classification_within_model[row,3] %>% as.character() ==
+      "NY.GDP.PCAP.PP.CD") {
+    group_code <- income_group_names %>% 
+      filter(name == (classification_within_model[row,2] %>% as.character())) %>%
+      pull(code)
+    classification_within_model[row,4:(dim(classification_within_model)[2])] <-
+      as.list(rep(group_code, num_years))
+      }
+}
+  
+# put data into 3d array
+income_group_3d <- array(dim = c(num_countries, num_years, num_features+1)) # add year
+for (row in 1:nrow(classification_within_model)) {
+  #print(row)
+  feature <- row %% num_features 
+  if (feature == 0) {
+    feature <- num_features
+  }
+  #print(feature)
+  country = trunc((row+(num_features-1))/num_features)
+  for (col_year in 1:num_years) {
+    income_group_3d[country, col_year, feature] <- 
+      classification_within_model[row, col_year+3] %>%
+      as.numeric()
+  }
+}
+
+# add year as a variable
+for (year in 1:num_years) {
+  income_group_3d[,year,5] <- year+1990
+}
+
+# cut into sections
+# set some parameters for our model
+max_len <- 4 # the number of previous examples we'll look at
+stride <- 1 # striding between segments when selecting time series data
+segs_per_country <- (num_years - max_len)/stride
+num_classes <- dim(income_group_names)[1]
+
+# get a list of start indexes for our (overlapping) chunks
+classification_segmented <- array(dim = c(num_countries*segs_per_country, 
+                                max_len+1, num_features+1)) # add year
+for(row in 1:(dim(income_group_3d)[1])) {
+  for(starting_col in 1:segs_per_country) {
+    seg_row <- ((row-1)*segs_per_country) + starting_col
+    classification_segmented[seg_row,,] <- 
+      income_group_3d[row,starting_col:(starting_col+max_len),]
+  }
+}
 ```
 
-```{r topic list}
-wdi_series %>% group_by(Topic) %>% summarise(n())
-wdi_series %>% group_by(`Indicator Name`) %>% summarise(n())
 
-code_employent_in_services = "SL.SRV.EMPL.ZS"
-"SL.IND.EMPL.ZS"
-"SL.AGR.EMPL.ZS"
-# GDP per capita PPP 
-"NY.GDP.PCAP.PP.CD"
+```{r}
+# split into test and train
+X_RNN_classification_group <- classification_segmented[,,-1]
+y_RNN_classification_group <- classification_segmented[,,1]
+
+set.seed(43)
+train_indices <- sample(1:(dim(classification_segmented)[1]), 
+                        dim(classification_segmented)[1]*.9)
+
+# training data
+X_train_RNN_classification_group <- X_RNN_classification_group[train_indices,,]
+# recode response labels using "one-hot" representation
+y_train_RNN_classification_group <- y_RNN_classification_group[train_indices]
+#  to_categorical(y_RNN_classification_group[train_indices], num_classes)
+
+# testing data
+X_test_RNN_classification_group <- X_RNN_classification_group[-train_indices,,]
+y_test_RNN_classification_group <- y_RNN_classification_group[-train_indices]
+#  to_categorical(y_RNN_classification_group[train_indices], num_classes)
 ```
+
+```{r}
+batch_size <- 64 # number of sequences to look at at one time during training
+total_epochs <- 100 # how many times we'll look @ the whole dataset while training our model
+
+model <- keras_model_sequential() %>%
+  layer_dense(input_shape = dim(X_train_RNN_classification_group)[2:3], units = max_len) %>%
+  layer_simple_rnn(units = 64, name="RNN_1",
+                   activation = "relu",
+                   return_sequences = TRUE) %>%
+  layer_simple_rnn(units = 32, name="RNN_2",
+                   activation = "relu",
+                   return_sequences = TRUE) %>%
+  layer_simple_rnn(units = 32, name="RNN_3",
+                   activation = "relu",
+                   return_sequences = TRUE) %>%
+  layer_dense(units = num_classes, activation = "sigmoid")
+
+model %>% compile(loss = "categorical_crossentropy",   # which loss to use
+          optimizer = "RMSprop",     # how to optimize the loss
+          metrics = c("accuracy"))             # how to evaluate the fit
+```
+
+```{r}
+# # Actually train our model! This step will take a while
+# trained_model <- model %>% fit(
+#     x = X_train_RNN_classification_group, # sequence we're using for prediction 
+#     y = y_train_RNN_classification_group, # sequence we're predicting
+#     batch_size = batch_size, # how many samples to pass to our model at a time
+#     epochs = total_epochs, # how many times we'll look @ the whole dataset
+#     validation_split = 0.33) # how much data to hold out for testing as we go along
+```
+
+
+# Part 2: Economic Structure and Income per Capita Growth
+
+```{r}
+# feature codes
+# outcome
+vars1 <- c("NY.GDP.PCAP.CD") #"GDP per capita (current US$)"
+# agriculture
+vars2 <- c("NV.AGR.TOTL.ZS", # Agriculture, forestry, and fishing, value added (% of GDP)
+           "SL.AGR.EMPL.ZS", # Employment in agriculture (% of total employment) 
+           "NV.AGR.EMPL.KD", # Agriculture, forestry, and fishing, value added per worker (constant 2015 US$)
+           "NY.GDP.TOTL.RT.ZS") # Total natural resources rents (% of GDP)
+# industry
+vars3 <- c("NV.IND.TOTL.ZS", # Industry (including construction), value added (% of GDP)
+           "NV.MNF.TECH.ZS.UN", # Medium and high-tech manufacturing value added (% manufacturing value added)
+           "SL.IND.EMPL.ZS") # Employment in industry (% of total employment) 
+# services
+vars4 <- c("NV.SRV.TOTL.ZS", # Services, value added (% of GDP)
+           "SL.SRV.EMPL.ZS") # Employment in services (% of total employment) 
+# trade
+vars5 <- c("NE.EXP.GNFS.ZS", # Exports of goods and services (% of GDP)
+           "BG.GSR.NFSV.GD.ZS", # Employment in agriculture (% of total employment) 
+           "NE.IMP.GNFS.ZS") # Imports of goods and services (% of GDP)
+# macroeconomics
+vars6 <- c("FP.CPI.TOTL.ZG", # Inflation, consumer prices (annual %)
+           "FS.AST.PRVT.GD.ZS", # Domestic credit to private sector (% of GDP)
+           "DT.ODA.ODAT.PC.ZS", # Net ODA received per capita (current US$)
+           "NE.GDI.TOTL.ZS", # Gross capital formation (% of GDP)
+           "SI.POV.UMIC", # Poverty headcount ratio at $5.50 a day (2011 PPP) (% of population)
+           "SI.POV.GINI") # Gini index (World Bank estimate)
+# human capital
+vars7 <- c("SP.URB.TOTL.IN.ZS", # Urban population (% of total population)
+           "SP.POP.1564.TO.ZS", # Population ages 15-64 (% of total population)
+           "SL.TLF.CACT.ZS", # Labor force participation rate, total (% of total population ages 15+)
+           "SL.TLF.CACT.FM.ZS", # Ratio of female to male labor force participation rate (%)
+           "SE.PRM.ENRR", # School enrollment, primary (% gross)
+           "SE.PRM.ENRL.FE.ZS", # Primary education, pupils (% female)
+           "SE.TER.ENRR", # School enrollment, tertiary (% gross)
+           "SE.SEC.ENRL.GC.FE.ZS" # Secondary education, general pupils (% female)
+           # ,"SE.SEC.ENRL.VO" # Secondary education, vocational pupils
+           ) 
+indicators <- c(vars1,vars2,vars3,vars4,vars5,vars6,vars7)
+# conflict
+conflict_deaths <- conflict_df %>% group_by(country, year) %>%
+  summarise(yearly_conflict_deaths = (sum(best))^.5) %>% # raised to .5 to reflect diminishing marginal negative effect as the conflict scales
+  ungroup() %>% 
+  pivot_wider(names_from = year, values_from = yearly_conflict_deaths) %>%
+  ungroup()
+conflict_deaths[is.na(conflict_deaths)] = 0
+conflict_deaths <- conflict_deaths %>% mutate(
+  `Indicator Code` = "Conflict",
+  `Indicator Name` = "Armed conflict deaths"
+)
+conflict_deaths <- conflict_deaths %>% mutate(`Country Name` = 
+  case_when(country == "Bosnia-Herzegovina" ~ "Bosnia and Herzegovina",
+  country == "Cambodia (Kampuchea)" ~ "Cambodia",
+  country == "DR Congo (Zaire)" ~ "Congo, Dem. Rep.",
+  country == "Gambia" ~ "Gambia, The",
+  country == "Ivory Coast" ~ "Côte d'Ivoire",
+  country == "Kingdom of eSwatini (Swaziland)" ~ "Eswatini",
+  country == "Kyrgyzstan" ~ "Kyrgyz Republic",
+  country == "Laos" ~ "Lao PDR",
+  country == "Macedonia, FYR" ~ "North Macedonia",
+  country == "Madagascar (Malagasy)" ~ "Madagascar",
+  country == "Myanmar (Burma)" ~ "Myanmar",
+  country == "Russia (Soviet Union)" ~ "Russia",
+  country == "Serbia (Yugoslavia)" ~ "Serbia",
+  country == "Syria" ~ "Syrian Arab Republic",
+  country == "United States of America" ~ "United States",
+  country == "Venezuela" ~ "Venezuela",
+  country == "Yemen (North Yemen)" ~ "Yemen",
+  country == "Zimbabwe (Rhodesia)" ~ "Zimbabwe",
+  TRUE ~ country))
+conflict_deaths <- conflict_deaths %>% left_join(
+  (wdi_country %>%
+  filter(!(is.na(`Currency Unit`))) %>% # remove regional groupings
+  select(`Short Name`, `Income Group`)),
+  by = c("Country Name" = "Short Name")
+)
+venezuela <- tribble( # manually create income group for Venezuela
+  ~country, ~group,
+  "Venezuela", "Upper middle income"
+)
+conflict_deaths <- 
+  conflict_deaths %>% 
+  left_join(venezuela,
+            by = c("Country Name" = "country", "Income Group" = "group"))
+
+# extract final data set to use
+indicators_complete <- 
+  wdi_raw %>% filter(`Indicator Code` %in% indicators) %>%
+  inner_join( 
+    (wdi_country %>%
+  filter(!(is.na(`Currency Unit`))) %>% # remove regional groupings
+  select(`Short Name`, `Income Group`)),
+  by = c("Country Name" = "Short Name")
+  )
+
+# it looks like we have a bunch of data starting in 1991
+# indicators_complete %>% 
+#   summarise(`1979` = sum(!is.na(`1979`)),
+#             `1980` = sum(!is.na(`1980`)),
+#             `1981` = sum(!is.na(`1981`)),
+#             `1982` = sum(!is.na(`1982`)),
+#             `1983` = sum(!is.na(`1983`)),
+#             `1984` = sum(!is.na(`1984`)),
+#             `1985` = sum(!is.na(`1985`)),
+#             `1986` = sum(!is.na(`1986`)),
+#             `1987` = sum(!is.na(`1987`)),
+#             `1988` = sum(!is.na(`1988`)),
+#             `1989` = sum(!is.na(`1989`)),
+#             `1990` = sum(!is.na(`1990`)),
+#             `1991` = sum(!is.na(`1991`)),
+#             `1992` = sum(!is.na(`1992`)),
+#             `1993` = sum(!is.na(`1993`)),
+#             `1994` = sum(!is.na(`1994`)),
+#             `1995` = sum(!is.na(`1995`)),
+#             `2000` = sum(!is.na(`2000`)),
+#             `2005` = sum(!is.na(`2005`)),
+#             `2010` = sum(!is.na(`2010`)),
+#             `2015` = sum(!is.na(`2015`)))
+indicators_complete <- indicators_complete %>% 
+  select(-(`1960`:`1983`), -`...66`, -`Indicator Name`)
+conflict_deaths <- conflict_deaths %>%
+  mutate(
+    `1984` = NA,
+    `1985` = NA,
+    `1986` = NA,
+    `1987` = NA,
+    `1988` = NA
+  ) %>% select(-country)
+indicators_complete <- indicators_complete %>% 
+  relocate(where(is.numeric), .after = where(is.character)) %>%
+  select(-`Country Code`)
+conflict_deaths <- conflict_deaths %>% 
+  relocate(where(is.numeric), .after = where(is.character)) %>%
+  select(-`Indicator Name`)
+indicators_complete_joined <- rbind(indicators_complete, conflict_deaths) %>%
+  filter(!(`Country Name` %in% c("Congo", "Côte d'Ivoire", "Dem. Rep. Congo", 
+                                 "Egypt", "Iran", "Russia", "The Gambia", "Venezuela", "Yemen",
+                                 "Gambia, The", "Congo, Dem. Rep.")))
+# growth metric = difference between year 0 and year n
+# other growth metric = avg growth in period 
+zero_conflict <- indicators_complete_joined %>% group_by(`Country Name`, `Income Group`) %>%
+  summarise(count = n()) %>% ungroup() %>% filter(count == 27) %>% select(-count)
+
+# manually add empty conflict row
+zero_conflict <- zero_conflict %>% mutate(`Indicator Code` = "Conflict")
+zero_matrix <- as_tibble(matrix(0, nrow = dim(zero_conflict)[1], ncol = (dim(indicators_complete_joined)[2]-3)))
+year_names <- colnames(indicators_complete_joined %>% select(`1984`:`2020`))
+for (i in 1:(dim(indicators_complete_joined)[2]-3)) {
+  names(zero_matrix)[i] <- year_names[i]
+}
+indicators_complete_joined <- rbind(
+  cbind(
+  zero_conflict %>% mutate(`Indicator Code` = "Conflict"),
+  zero_matrix), 
+indicators_complete_joined
+)
+```
+
+
+```{r}
+# value imputation
+indicators_imputed <- indicators_complete_joined
+for (row in 1:(dim(indicators_complete_joined)[1])) {
+  indicator = indicators_complete_joined[row,3] %>% as.character()
+  income_group = indicators_complete_joined[row,2] %>% as.character()
+  country_avg <- mean(indicators_complete_joined[row,(4:(dim(indicators_complete_joined)[2]))] %>%
+                        unlist(use.names=FALSE),
+           na.rm = TRUE)
+  if (row %% 100 == 0) {
+    print(row)
+  }
+  for (col in 1:(dim(indicators_complete_joined)[2]-3)) {
+    val = indicators_complete_joined[row,(dim(indicators_complete_joined)[2] - col+1)] %>%
+      as.numeric()
+    if (is.na(val)) {
+      year <- as.character(dim(indicators_complete_joined)[2] - col+1 +1980)
+      year_avg <- mean(indicators_complete_joined %>% # year avg
+        filter(
+          `Income Group` == income_group,
+          `Indicator Code` == indicator
+        ) %>%
+        pull(year), na.rm=TRUE)
+      
+    val <- mean(c(year_avg, country_avg), na.rm=TRUE)
+    indicators_imputed[row,(dim(indicators_complete_joined)[2] - col+1)] <- val
+    }
+  }
+}
+
+# run twice to really get rid of all NaNs
+for (row in 1:(dim(indicators_imputed)[1])) {
+  indicator = indicators_imputed[row,3] %>% as.character()
+  income_group = indicators_imputed[row,2] %>% as.character()
+  country_avg <- mean(indicators_imputed[row,(4:(dim(indicators_imputed)[2]))] %>%
+                        unlist(use.names=FALSE),
+           na.rm = TRUE)
+  if (row %% 100 == 0) {
+    print(row)
+  }
+  for (col in 1:(dim(indicators_imputed)[2]-3)) {
+    val = indicators_imputed[row,(dim(indicators_imputed)[2] - col+1)] %>%
+      as.numeric()
+    #print(val)
+    if (is.na(val)) {
+      year <- as.character(dim(indicators_imputed)[2] - col+1 +1980)
+      year_avg <- mean(indicators_imputed %>% # year avg
+        filter(
+          `Income Group` == income_group,
+          `Indicator Code` == indicator
+        ) %>%
+        pull(year), na.rm=TRUE)
+      
+    val <- mean(c(year_avg, country_avg), na.rm=TRUE)
+    indicators_imputed[row,(dim(indicators_imputed)[2] - col+1)] <- val
+    }
+  }
+}
+
+indicators_imputed <- indicators_imputed %>% drop_na() # drop na country names
+
+```
+```{r}
+indicators_imputed %>%
+  group_by(`Indicator Code`) %>%
+  summarise(`1984` = sum(is.na(`1984`)),
+            `1985` = sum(is.na(`1985`)),
+            `1986` = sum(is.na(`1986`)),
+            `1987` = sum(is.na(`1987`)),
+            `1988` = sum(is.na(`1988`)),
+            `1989` = sum(is.na(`1989`)),
+            `1990` = sum(is.na(`1990`)),
+            `1991` = sum(is.na(`1991`)),
+            `1992` = sum(is.na(`1992`)),
+            `1993` = sum(is.na(`1993`)),
+            `1994` = sum(is.na(`1994`)),
+            `1995` = sum(is.na(`1995`)),
+            `2000` = sum(is.na(`2000`)),
+            `2001` = sum(is.na(`2001`)),
+            `2002` = sum(is.na(`2002`)),
+            `2003` = sum(is.na(`2003`)),
+            `2004` = sum(is.na(`2004`)),
+            `2005` = sum(is.na(`2005`)),
+            `2006` = sum(is.na(`2006`)),
+            `2007` = sum(is.na(`2007`)),
+            `2008` = sum(is.na(`2008`)),
+            `2009` = sum(is.na(`2009`)),
+            `2010` = sum(is.na(`2010`)),
+            `2011` = sum(is.na(`2011`)),
+            `2012` = sum(is.na(`2012`)),
+            `2013` = sum(is.na(`2013`)),
+            `2014` = sum(is.na(`2014`)),
+            `2015` = sum(is.na(`2015`)),
+            nnan2016 = sum(is.na(`2016`)),
+            `2017` = sum(is.na(`2017`)),
+            `2018` = sum(is.na(`2018`)),
+            `2019` = sum(is.na(`2019`)),
+            nnan2020 = sum(is.na(`2020`)))
+
+indicators_imputed
+```
+
+
+## Variable selection with best subset regression
+
+
+```{r}
+# Wrangle into correct format
+indicators_plm <- indicators_imputed %>%
+  pivot_longer(cols = (`1984`:`2020`), names_to = "Year", values_to = "Value") %>%
+  pivot_wider(names_from="Indicator Code", values_from = "Value") %>%
+  select(-`Income Group`)
+indicators_plm$Year = as.numeric(indicators_plm$Year)
+indicators_plm$`1yr_growth` <- NA
+indicators_plm$`3yr_growth` <- NA
+indicators_plm$`5yr_growth` <- NA
+indicators_plm$`10yr_growth` <- NA
+
+obs_country <- indicators_plm %>% group_by(`Country Name`) %>%
+  summarize(count = n()) %>% head(1) %>% pull(count)
+num_countries <- dim(indicators_plm %>% group_by(`Country Name`) %>%
+  summarize(count = n()))[1]
+gdp_vals <- indicators_plm %>% select(NY.GDP.PCAP.CD) %>% unlist()
+
+country_as_id <- indicators_plm %>% group_by(`Country Name`) %>%
+  summarise(country_id = n()) %>% ungroup()
+country_as_id$country_id = c(1:(dim(country_as_id)[1]))
+indicators_plm <- indicators_plm %>% 
+  inner_join(country_as_id, by = c("Country Name" = "Country Name"))
+
+# fill in for train
+for (row in 1:(dim(indicators_plm)[1])) {
+  num_years_history <- (row - 1) %% obs_country
+  this_year <- gdp_vals[row]
+  # fill 1 year
+  if (num_years_history > 0) {
+    yr0 <- gdp_vals[row - 1]
+    indicators_plm$`1yr_growth`[row] = (this_year-yr0)/yr0
+  }
+  # fill 3 year
+  if (num_years_history > 2) {
+    yr0 <- gdp_vals[row - 3]
+    indicators_plm$`3yr_growth`[row] = (this_year-yr0)/yr0
+  }
+  # fill 5 year
+  if (num_years_history > 4) {
+    yr0 <- gdp_vals[row - 5]
+    indicators_plm$`5yr_growth`[row] = (this_year-yr0)/yr0
+  }
+  # fill 10 year
+  if (num_years_history > 9) {
+    yr0 <- gdp_vals[row - 10]
+    indicators_plm$`10yr_growth`[row] = (this_year-yr0)/yr0
+  }
+}
+
+# pseries_train <- pseriesfy(pdata.frame(as.data.frame(indicators_plm_train), 
+#                         index = c("country_id", "Year")))
+# pseries_test <- pseriesfy(pdata.frame(as.data.frame(indicators_plm_test), 
+#                         index = c("country_id", "Year")))
+```
+
+```{r}
+# tune for number of lags and key variables
+max_lags <- 8
+num_bootstrap_iterations <- 12
+gdp_growth_lags_grid = expand.grid(
+  lags = c(1:max_lags),
+  test_mse_1yr = 0,
+  num_sig_features_1yr = 0,
+  num_sig_lags_1yr = 0,
+  test_mse_3yr = 0,
+  num_sig_features_3yr = 0,
+  num_sig_lags_3yr = 0,
+  test_mse_5yr = 0,
+  num_sig_features_5yr = 0,
+  num_sig_lags_5yr = 0,
+  test_mse_10yr = 0,
+  num_sig_features_10yr = 0,
+  num_sig_lags_10yr = 0
+)
+gdp_pcap_lags_grid <- gdp_growth_lags_grid
+gdp_both_lags_grid <- gdp_growth_lags_grid
+
+growth_bootstrap_grid = expand.grid(
+  iteration = c(1:num_bootstrap_iterations),
+  test_mse_1yr = 0,
+  num_sig_features_1yr = 0,
+  num_sig_lags_1yr = 0,
+  test_mse_3yr = 0,
+  num_sig_features_3yr = 0,
+  num_sig_lags_3yr = 0,
+  test_mse_5yr = 0,
+  num_sig_features_5yr = 0,
+  num_sig_lags_5yr = 0,
+  test_mse_10yr = 0,
+  num_sig_features_10yr = 0,
+  num_sig_lags_10yr = 0
+)
+pcap_bootstrap_grid <- growth_bootstrap_grid
+both_bootstrap_grid <- growth_bootstrap_grid
+
+get_lags <- function(response, limit) {
+  str <- ""
+  if (limit > 0) {
+    
+    for (index in 1:limit) {
+    to_add = paste(" +lag(", response, ",", as.character(index), ")")
+    str <- paste(str, to_add)
+  }
+  }
+  str
+}
+all_features <- "0 + NV.AGR.TOTL.ZS + NV.AGR.EMPL.KD + FS.AST.PRVT.GD.ZS + SL.AGR.EMPL.ZS  +  SL.IND.EMPL.ZS  +  SL.SRV.EMPL.ZS +   NE.EXP.GNFS.ZS   +  SI.POV.GINI   +    NE.GDI.TOTL.ZS  +    NE.IMP.GNFS.ZS  +    NV.IND.TOTL.ZS  +    FP.CPI.TOTL.ZG +   SL.TLF.CACT.ZS  +     NV.MNF.TECH.ZS.UN  +     DT.ODA.ODAT.PC.ZS  +     SP.POP.1564.TO.ZS  +   SI.POV.UMIC  +     SE.PRM.ENRL.FE.ZS  +     SL.TLF.CACT.FM.ZS  +     SE.PRM.ENRR  +     SE.TER.ENRR   +   SE.SEC.ENRL.GC.FE.ZS +    NV.SRV.TOTL.ZS  +     NY.GDP.TOTL.RT.ZS  +   BG.GSR.NFSV.GD.ZS  +     SP.URB.TOTL.IN.ZS  +      Conflict"
+
+get_1yr_response <- function(test_data, lags) {
+  no_na <- test_data %>% 
+    select(-`3yr_growth`, -`5yr_growth`, -`10yr_growth`) %>%
+  drop_na()
+  min_year <- no_na %>% arrange(Year) %>% head(1) %>% pull(Year)
+  test_data %>% filter(Year > (min_year + lags)) %>% pull(`1yr_growth`)
+}
+get_3yr_response <- function(test_data,lags) {
+  no_na <- test_data %>% 
+    select(-`1yr_growth`, -`5yr_growth`, -`10yr_growth`)  %>%
+    drop_na()
+  min_year <- no_na %>% arrange(Year) %>% head(1) %>% pull(Year)
+  test_data %>% filter(Year > (min_year + lags)) %>% pull(`3yr_growth`)
+}
+get_5yr_response <- function(test_data, lags) {
+  no_na <- test_data %>% 
+    select(-`3yr_growth`, -`1yr_growth`, -`10yr_growth`) %>%
+    drop_na()
+  min_year <- no_na %>% arrange(Year) %>% head(1) %>% pull(Year)
+  test_data %>% filter(Year > (min_year + lags)) %>% pull(`5yr_growth`)
+}
+get_10yr_response <- function(test_data, lags) {
+  no_na <- test_data %>% 
+    select(-`3yr_growth`, -`5yr_growth`, -`1yr_growth`) %>%
+    drop_na()
+  min_year <- no_na %>% arrange(Year) %>% head(1) %>% pull(Year)
+  test_data %>% filter(Year > (min_year + lags)) %>% pull(`10yr_growth`)
+}
+
+for (i in 0:max_lags) {
+  print("lag number")
+  print(i)
+  # calls
+  call_1yr_growth <- paste("X1yr_growth ~ ", all_features, get_lags("X1yr_growth", i))
+  call_3yr_growth <- paste("X3yr_growth ~ ", all_features, get_lags("X3yr_growth", i))
+  call_5yr_growth <- paste("X5yr_growth ~ ", all_features, get_lags("X5yr_growth", i))
+  call_10yr_growth <- paste("X10yr_growth ~ ", all_features, get_lags("X10yr_growth", i))
+  
+  call_1yr_pcap <- paste("X1yr_growth ~ ", all_features, get_lags("NY.GDP.PCAP.CD", i))
+  call_3yr_pcap <- paste("X3yr_growth ~ ", all_features, get_lags("NY.GDP.PCAP.CD", i))
+  call_5yr_pcap <- paste("X5yr_growth ~ ", all_features, get_lags("NY.GDP.PCAP.CD", i))
+  call_10yr_pcap <- paste("X10yr_growth ~ ", all_features, get_lags("NY.GDP.PCAP.CD", i))
+  
+  call_1yr_both <- paste("X1yr_growth ~ ", all_features, get_lags("X1yr_growth", i), get_lags("NY.GDP.PCAP.CD", i))
+  call_3yr_both <- paste("X3yr_growth ~ ", all_features, get_lags("X3yr_growth", i), get_lags("NY.GDP.PCAP.CD", i))
+  call_5yr_both <- paste("X5yr_growth ~ ", all_features, get_lags("X5yr_growth", i), get_lags("NY.GDP.PCAP.CD", i))
+  call_10yr_both <- paste("X10yr_growth ~ ", all_features, get_lags("X10yr_growth", i), get_lags("NY.GDP.PCAP.CD", i))
+  
+  for (iteration in 1:num_bootstrap_iterations) {
+    
+    # split into train and test
+    set.seed(iteration*3)
+    train_countries <- sample(1:num_countries, .8*num_countries)
+      indicators_plm_train <- indicators_plm %>%
+    filter(country_id %in% train_countries)
+      indicators_plm_test <- indicators_plm %>%
+    filter(!(country_id %in% train_countries))
+      
+      pseries_train <- pseriesfy(pdata.frame(as.data.frame(indicators_plm_train), 
+                         index = c("country_id", "Year")))
+      pseries_test <- pseriesfy(pdata.frame(as.data.frame(indicators_plm_test), 
+                         index = c("country_id", "Year")))
+
+
+    # models
+  model_1yr_growth <- plm(call_1yr_growth, data = pseries_train, 
+                          index = c("country_id", "Year"),
+                          na.action= "na.omit",
+                          model="within")
+  model_1yr_growth_coefs <- summary(model_1yr_growth)$coefficients
+  model_1yr_growth_tibble <- as_tibble(model_1yr_growth_coefs) %>%
+    mutate(variable = rownames(model_1yr_growth_coefs))
+  model_3yr_growth <- plm(call_3yr_growth, data = pseries_train, 
+                          index = c("country_id", "Year"),
+                          na.action= "na.omit",
+                          model="within")
+  model_3yr_growth_coefs <- summary(model_3yr_growth)$coefficients
+  model_3yr_growth_tibble <- as_tibble(model_3yr_growth_coefs) %>%
+    mutate(variable = rownames(model_3yr_growth_coefs))
+  model_5yr_growth <- plm(call_5yr_growth, data = pseries_train, 
+                          index = c("country_id", "Year"),
+                          na.action= "na.omit",
+                          model="within")
+  model_5yr_growth_coefs <- summary(model_5yr_growth)$coefficients
+  model_5yr_growth_tibble <- as_tibble(model_5yr_growth_coefs) %>%
+    mutate(variable = rownames(model_5yr_growth_coefs))
+  model_10yr_growth <- plm(call_10yr_growth, data = pseries_train, 
+                          index = c("country_id", "Year"),
+                          na.action= "na.omit",
+                          model="within")
+  model_10yr_growth_coefs <- summary(model_10yr_growth)$coefficients
+  model_10yr_growth_tibble <- as_tibble(model_10yr_growth_coefs) %>%
+    mutate(variable = rownames(model_10yr_growth_coefs))
+  
+  model_1yr_pcap <- plm(call_1yr_pcap, data = pseries_train, 
+                          index = c("country_id", "Year"),
+                          na.action= "na.omit",
+                          model="within")
+  model_1yr_pcap_coefs <- summary(model_1yr_pcap)$coefficients
+  model_1yr_pcap_tibble <- as_tibble(model_1yr_pcap_coefs) %>%
+    mutate(variable = rownames(model_1yr_pcap_coefs))
+  model_3yr_pcap <- plm(call_3yr_pcap, data = pseries_train, 
+                          index = c("country_id", "Year"),
+                          na.action= "na.omit",
+                          model="within")
+  model_3yr_pcap_coefs <- summary(model_3yr_pcap)$coefficients
+  model_3yr_pcap_tibble <- as_tibble(model_3yr_pcap_coefs) %>%
+    mutate(variable = rownames(model_3yr_pcap_coefs))
+  model_5yr_pcap <- plm(call_5yr_pcap, data = pseries_train, 
+                          index = c("country_id", "Year"),
+                          na.action= "na.omit",
+                          model="within")
+  model_5yr_pcap_coefs <- summary(model_5yr_pcap)$coefficients
+  model_5yr_pcap_tibble <- as_tibble(model_5yr_pcap_coefs) %>%
+    mutate(variable = rownames(model_5yr_pcap_coefs))
+  model_10yr_pcap <- plm(call_10yr_pcap, data = pseries_train, 
+                          index = c("country_id", "Year"),
+                          na.action= "na.omit",
+                          model="within")
+  model_10yr_pcap_coefs <- summary(model_10yr_pcap)$coefficients
+  model_10yr_pcap_tibble <- as_tibble(model_10yr_pcap_coefs) %>%
+    mutate(variable = rownames(model_10yr_pcap_coefs))
+  
+  model_1yr_both <- plm(call_1yr_both, data = pseries_train, 
+                          index = c("country_id", "Year"),
+                          na.action= "na.omit",
+                          model="within")
+  model_1yr_both_coefs <- summary(model_1yr_both)$coefficients
+  model_1yr_both_tibble <- as_tibble(model_1yr_both_coefs) %>%
+    mutate(variable = rownames(model_1yr_both_coefs))
+  model_3yr_both <- plm(call_3yr_both, data = pseries_train, 
+                          index = c("country_id", "Year"),
+                          na.action= "na.omit",
+                          model="within")
+  model_3yr_both_coefs <- summary(model_3yr_both)$coefficients
+  model_3yr_both_tibble <- as_tibble(model_3yr_both_coefs) %>%
+    mutate(variable = rownames(model_3yr_both_coefs))
+  model_5yr_both <- plm(call_5yr_both, data = pseries_train, 
+                          index = c("country_id", "Year"),
+                          na.action= "na.omit",
+                          model="within")
+  model_5yr_both_coefs <- summary(model_5yr_both)$coefficients
+  model_5yr_both_tibble <- as_tibble(model_5yr_both_coefs) %>%
+    mutate(variable = rownames(model_5yr_both_coefs))
+  model_10yr_both <- plm(call_10yr_both, data = pseries_train, 
+                          index = c("country_id", "Year"),
+                          na.action= "na.omit",
+                          model="within")
+  model_10yr_both_coefs <- summary(model_10yr_both)$coefficients
+  model_10yr_both_tibble <- as_tibble(model_10yr_both_coefs) %>%
+    mutate(variable = rownames(model_10yr_both_coefs))
+  
+  # results
+  # 1yr response
+  resp_1yr <- get_1yr_response(indicators_plm_test, i) 
+  growth_bootstrap_grid$test_mse_1yr[iteration] =
+    mean((predict(model_1yr_growth,
+                  newdata = pseries_test,
+                  index = c("country_id", "Year"), 
+                  na.action= "na.omit",
+                  model="within") - resp_1yr)^2, na.rm=TRUE)
+  pcap_bootstrap_grid$test_mse_1yr[iteration] =
+    mean((predict(model_1yr_pcap,
+                  newdata = pseries_test,
+                  index = c("country_id", "Year"), 
+                  na.action= "na.omit",
+                  model="within") - resp_1yr)^2, na.rm=TRUE)
+  both_bootstrap_grid$test_mse_1yr[iteration] = 
+    mean((predict(model_1yr_both,
+                  newdata = pseries_test,
+                  index = c("country_id", "Year"), 
+                  na.action= "na.omit",
+                  model="within") - resp_1yr)^2, na.rm=TRUE)
+  
+  # 3yr response
+  resp_3yr <- get_3yr_response(indicators_plm_test, i)
+  growth_bootstrap_grid$test_mse_3yr[iteration] =
+    mean((predict(model_3yr_growth,
+                  newdata = pseries_test,
+                  index = c("country_id", "Year"), 
+                  na.action= "na.omit",
+                  model="within") - resp_3yr)^2, na.rm=TRUE)
+  pcap_bootstrap_grid$test_mse_3yr[iteration] =
+    mean((predict(model_3yr_pcap,
+                  newdata = pseries_test,
+                  index = c("country_id", "Year"), 
+                  na.action= "na.omit",
+                  model="within") - resp_3yr)^2, na.rm=TRUE)
+  both_bootstrap_grid$test_mse_3yr[iteration] = 
+    mean((predict(model_3yr_both,
+                  newdata = pseries_test,
+                  index = c("country_id", "Year"), 
+                  na.action= "na.omit",
+                  model="within") - resp_3yr)^2, na.rm=TRUE)
+  # 5 yr response
+  resp_5yr <- get_5yr_response(indicators_plm_test, i)
+  growth_bootstrap_grid$test_mse_5yr[iteration] =
+    mean((predict(model_5yr_growth,
+                  newdata = pseries_test,
+                  index = c("country_id", "Year"), 
+                  na.action= "na.omit",
+                  model="within") - resp_5yr)^2, na.rm=TRUE)
+  pcap_bootstrap_grid$test_mse_5yr[iteration] =
+    mean((predict(model_5yr_pcap,
+                  newdata = pseries_test,
+                  index = c("country_id", "Year"), 
+                  na.action= "na.omit",
+                  model="within") - resp_5yr)^2, na.rm=TRUE)
+  both_bootstrap_grid$test_mse_5yr[iteration] = 
+    mean((predict(model_5yr_both,
+                  newdata = pseries_test,
+                  index = c("country_id", "Year"), 
+                  na.action= "na.omit",
+                  model="within") - resp_5yr)^2, na.rm=TRUE)
+  # 10 yr response
+  resp_10yr <- get_10yr_response(indicators_plm_test, i)
+  growth_bootstrap_grid$test_mse_10yr[iteration] =
+    mean((predict(model_10yr_growth,
+                  newdata = pseries_test,
+                  index = c("country_id", "Year"), 
+                  na.action= "na.omit",
+                  model="within") - resp_10yr)^2, na.rm=TRUE)
+  pcap_bootstrap_grid$test_mse_10yr[iteration] =
+    mean((predict(model_10yr_pcap,
+                  newdata = pseries_test,
+                  index = c("country_id", "Year"), 
+                  na.action= "na.omit",
+                  model="within") - resp_10yr)^2, na.rm=TRUE)
+  both_bootstrap_grid$test_mse_10yr[iteration] = 
+    mean((predict(model_10yr_both,
+                  newdata = pseries_test,
+                  index = c("country_id", "Year"), 
+                  na.action= "na.omit",
+                  model="within") - resp_10yr)^2, na.rm=TRUE)
+  
+  # extract number significant features
+  growth_bootstrap_grid$num_sig_features_1yr[iteration] =
+    model_1yr_growth_tibble %>% filter(!grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+  growth_bootstrap_grid$num_sig_features_3yr[iteration] =
+    model_3yr_growth_tibble %>% filter(!grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+  growth_bootstrap_grid$num_sig_features_5yr[iteration] =
+    model_5yr_growth_tibble %>% filter(!grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+  growth_bootstrap_grid$num_sig_features_10yr[iteration] =
+    model_10yr_growth_tibble %>% filter(!grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+  
+  pcap_bootstrap_grid$num_sig_features_1yr[iteration] =
+    model_1yr_pcap_tibble %>% filter(!grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+  pcap_bootstrap_grid$num_sig_features_3yr[iteration] =
+    model_3yr_pcap_tibble %>% filter(!grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+  pcap_bootstrap_grid$num_sig_features_5yr[iteration] =
+    model_5yr_pcap_tibble %>% filter(!grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+  pcap_bootstrap_grid$num_sig_features_10yr[iteration] =
+    model_10yr_pcap_tibble %>% filter(!grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+  
+  both_bootstrap_grid$num_sig_features_1yr[iteration] =
+    model_1yr_both_tibble %>% filter(!grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+  both_bootstrap_grid$num_sig_features_3yr[iteration] =
+    model_3yr_both_tibble %>% filter(!grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+  both_bootstrap_grid$num_sig_features_5yr[iteration] =
+    model_5yr_both_tibble %>% filter(!grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+  both_bootstrap_grid$num_sig_features_10yr[iteration] =
+    model_10yr_both_tibble %>% filter(!grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+  
+  # extract number significant lags
+  growth_bootstrap_grid$num_sig_lags_1yr[iteration] =
+    model_1yr_growth_tibble %>% filter(grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+  growth_bootstrap_grid$num_sig_lags_3yr[iteration] =
+    model_3yr_growth_tibble %>% filter(grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+  growth_bootstrap_grid$num_sig_lags_5yr[iteration] =
+    model_5yr_growth_tibble %>% filter(grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+  growth_bootstrap_grid$num_sig_lags_10yr[iteration] =
+    model_10yr_growth_tibble %>% filter(grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+  
+  pcap_bootstrap_grid$num_sig_lags_1yr[iteration] =
+    model_1yr_pcap_tibble %>% filter(grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+  pcap_bootstrap_grid$num_sig_lags_3yr[iteration] =
+    model_3yr_pcap_tibble %>% filter(grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+  pcap_bootstrap_grid$num_sig_lags_5yr[iteration] =
+    model_5yr_pcap_tibble %>% filter(grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+  pcap_bootstrap_grid$num_sig_lags_10yr[iteration] =
+    model_10yr_pcap_tibble %>% filter(grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+  
+  both_bootstrap_grid$num_sig_lags_1yr[iteration] =
+    model_1yr_both_tibble %>% filter(grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+  both_bootstrap_grid$num_sig_lags_3yr[iteration] =
+    model_3yr_both_tibble %>% filter(grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+  both_bootstrap_grid$num_sig_lags_5yr[iteration] =
+    model_5yr_both_tibble %>% filter(grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+ both_bootstrap_grid$num_sig_lags_10yr[iteration] =
+    model_10yr_both_tibble %>% filter(grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+  }
+  
+  gdp_growth_lags_grid$test_mse_1yr[i] = mean(growth_bootstrap_grid$test_mse_1yr, na.rm=TRUE)
+  gdp_growth_lags_grid$num_sig_features_1yr[i] = mean(growth_bootstrap_grid$num_sig_features_1yr, na.rm=TRUE)
+  gdp_growth_lags_grid$num_sig_lags_1yr[i] = mean(growth_bootstrap_grid$num_sig_lags_1yr, na.rm=TRUE)
+  gdp_growth_lags_grid$test_mse_3yr[i] = mean(growth_bootstrap_grid$test_mse_3yr, na.rm=TRUE)
+  gdp_growth_lags_grid$num_sig_features_3yr[i] = mean(growth_bootstrap_grid$num_sig_features_3yr, na.rm=TRUE)
+  gdp_growth_lags_grid$num_sig_lags_3yr[i] = mean(growth_bootstrap_grid$num_sig_lags_3yr, na.rm=TRUE)
+  gdp_growth_lags_grid$test_mse_5yr[i] = mean(growth_bootstrap_grid$test_mse_1yr, na.rm=TRUE)
+  gdp_growth_lags_grid$num_sig_features_5yr[i] = mean(growth_bootstrap_grid$num_sig_features_5yr, na.rm=TRUE)
+  gdp_growth_lags_grid$num_sig_lags_5yr[i] = mean(growth_bootstrap_grid$num_sig_lags_5yr, na.rm=TRUE)
+  gdp_growth_lags_grid$test_mse_10yr[i] = mean(growth_bootstrap_grid$test_mse_10yr, na.rm=TRUE)
+  gdp_growth_lags_grid$num_sig_features_10yr[i] = mean(growth_bootstrap_grid$num_sig_features_10yr, na.rm=TRUE)
+  gdp_growth_lags_grid$num_sig_lags_10yr[i] = mean(growth_bootstrap_grid$num_sig_lags_10yr, na.rm=TRUE)
+  
+  gdp_pcap_lags_grid$test_mse_1yr[i] = mean(pcap_bootstrap_grid$test_mse_1yr, na.rm=TRUE)
+  gdp_pcap_lags_grid$num_sig_features_1yr[i] = mean(pcap_bootstrap_grid$num_sig_features_1yr, na.rm=TRUE)
+  gdp_pcap_lags_grid$num_sig_lags_1yr[i] = mean(pcap_bootstrap_grid$num_sig_lags_1yr, na.rm=TRUE)
+  gdp_pcap_lags_grid$test_mse_3yr[i] = mean(pcap_bootstrap_grid$test_mse_3yr, na.rm=TRUE)
+  gdp_pcap_lags_grid$num_sig_features_3yr[i] = mean(pcap_bootstrap_grid$num_sig_features_3yr, na.rm=TRUE)
+  gdp_pcap_lags_grid$num_sig_lags_3yr[i] = mean(pcap_bootstrap_grid$num_sig_lags_3yr, na.rm=TRUE)
+  gdp_pcap_lags_grid$test_mse_5yr[i] = mean(pcap_bootstrap_grid$test_mse_1yr, na.rm=TRUE)
+  gdp_pcap_lags_grid$num_sig_features_5yr[i] = mean(pcap_bootstrap_grid$num_sig_features_5yr, na.rm=TRUE)
+  gdp_pcap_lags_grid$num_sig_lags_5yr[i] = mean(pcap_bootstrap_grid$num_sig_lags_5yr, na.rm=TRUE)
+  gdp_pcap_lags_grid$test_mse_10yr[i] = mean(pcap_bootstrap_grid$test_mse_10yr, na.rm=TRUE)
+  gdp_pcap_lags_grid$num_sig_features_10yr[i] = mean(pcap_bootstrap_grid$num_sig_features_10yr, na.rm=TRUE)
+  gdp_pcap_lags_grid$num_sig_lags_10yr[i] = mean(pcap_bootstrap_grid$num_sig_lags_10yr, na.rm=TRUE)
+
+  
+  gdp_both_lags_grid$test_mse_1yr[i] = mean(both_bootstrap_grid$test_mse_1yr, na.rm=TRUE)
+  gdp_both_lags_grid$num_sig_features_1yr[i] = mean(both_bootstrap_grid$num_sig_features_1yr, na.rm=TRUE)
+  gdp_both_lags_grid$num_sig_lags_1yr[i] = mean(both_bootstrap_grid$num_sig_lags_1yr, na.rm=TRUE)
+  gdp_both_lags_grid$test_mse_3yr[i] = mean(both_bootstrap_grid$test_mse_3yr, na.rm=TRUE)
+  gdp_both_lags_grid$num_sig_features_3yr[i] = mean(both_bootstrap_grid$num_sig_features_3yr, na.rm=TRUE)
+  gdp_both_lags_grid$num_sig_lags_3yr[i] = mean(both_bootstrap_grid$num_sig_lags_3yr, na.rm=TRUE)
+  gdp_both_lags_grid$test_mse_5yr[i] = mean(both_bootstrap_grid$test_mse_1yr, na.rm=TRUE)
+  gdp_both_lags_grid$num_sig_features_5yr[i] = mean(both_bootstrap_grid$num_sig_features_5yr, na.rm=TRUE)
+  gdp_both_lags_grid$num_sig_lags_5yr[i] = mean(both_bootstrap_grid$num_sig_lags_5yr, na.rm=TRUE)
+  gdp_both_lags_grid$test_mse_10yr[i] = mean(both_bootstrap_grid$test_mse_10yr, na.rm=TRUE)
+  gdp_both_lags_grid$num_sig_features_10yr[i] = mean(both_bootstrap_grid$num_sig_features_10yr, na.rm=TRUE)
+  gdp_both_lags_grid$num_sig_lags_10yr[i] = mean(both_bootstrap_grid$num_sig_lags_10yr, na.rm=TRUE)
+}
+```
+```{r}
+gdp_growth_lags_grid <- as_tibble(gdp_growth_lags_grid) %>%
+  mutate(lag_type = "growth")
+gdp_pcap_lags_grid <- as_tibble(gdp_pcap_lags_grid) %>%
+  mutate(lag_type = "gdp_pcap")
+gdp_both_lags_grid <- as_tibble(gdp_both_lags_grid) %>%
+  mutate(lag_type = "both")
+
+param_grid_combined = rbind(
+  gdp_growth_lags_grid,
+  gdp_pcap_lags_grid,
+  gdp_both_lags_grid
+)
+
+param_grid_combined$scaled_1yr <- scale(param_grid_combined$test_mse_1yr)
+param_grid_combined$scaled_3yr <- scale(param_grid_combined$test_mse_3yr)
+param_grid_combined$scaled_5yr <- scale(param_grid_combined$test_mse_5yr)
+param_grid_combined$scaled_10yr <- scale(param_grid_combined$test_mse_10yr)
+
+param_grid_combined %>% 
+  pivot_longer(cols = c(scaled_1yr, scaled_3yr, scaled_5yr, scaled_10yr),
+               names_to = "growth_period",
+               values_to = "scaled_test_mse") %>%
+  ggplot(aes(x = lags, y = scaled_test_mse, 
+             shape = growth_period, colour = lag_type)) +
+  geom_point() +
+  geom_smooth(se = FALSE)
+
+# we see that there is like no trend in the data at all lmao
+# bootstrap it?
+# take a look at the 
+# growth seems to be a much better choice of lags than other kinds of lags 
+
+```
+```{r}
+# Occam's Razor Principle
+best_call <- paste("X3yr_growth ~ ", all_features, get_lags("X3yr_growth", 4))
+pseries <- pseriesfy(pdata.frame(as.data.frame(indicators_plm), 
+                         index = c("country_id", "Year")))
+summary(plm(best_call, data = pseries_train, 
+                          index = c("country_id", "Year"),
+                          na.action= "na.omit",
+                          model="within"))
+
+```
+
+## RNN model
+
+```{r}
+# wrangle the data into 3 dimensions
+to_3d_all_features <- indicators_plm %>% 
+  select(-`1yr_growth`, -`5yr_growth`, -`10yr_growth`, -country_id) %>% # select 3 yr growth as response
+  pivot_longer(cols=c(Conflict, NV.AGR.TOTL.ZS:`3yr_growth`), names_to = "Indicator Code", values_to = "vals") %>%
+  filter(Year > 1986) %>% # filter out years with null response
+  pivot_wider(names_from = Year, values_from = vals) %>%
+  arrange(`Country Name`, `Indicator Code`) %>% drop_na()
+
+to_3d_all_features %>% group_by(`Country Name`) %>%
+  summarise(count = n())
+
+num_countries <- dim(to_3d_all_features %>% group_by(`Country Name`) %>%
+  summarise(n()))[1]
+num_years <- 2020-1987 + 1
+num_features <- dim(to_3d_all_features %>% group_by(`Indicator Code`) %>%
+  summarise(n()))[1] # add the year
+
+# set a random seed for reproducibility
+set.seed(123)
+
+# put data into 3d array
+all_features_3d <- array(dim = c(num_countries, num_years, num_features+1)) # add year
+for (row in 1:nrow(to_3d_all_features)) {
+  #print(row)
+  feature <- row %% num_features 
+  if (feature == 0) {
+    feature <- num_features 
+  }
+  #print(feature)
+  country = trunc((row+(num_features-1))/num_features)
+  for (col_year in 1:num_years) {
+    all_features_3d[country, col_year, feature] <- 
+      to_3d_all_features[row, col_year+2] %>%
+      as.numeric()
+  }
+}
+
+# add year as a variable
+for (year in 1:num_years) {
+  all_features_3d[,year,num_features+1] <- year+1990
+}
+
+```
+
+
+```{r}
+# cut into sections
+# set some parameters for our model
+max_len <- 4 # the number of previous examples we'll look at
+stride <- 1 # striding between segments when selecting time series data
+segs_per_country <- (num_years - max_len)/stride
+
+# get a list of start indexes for our (overlapping) chunks
+segmented_full_data <- array(dim = c(num_countries*segs_per_country, 
+                                max_len+1, num_features+1)) # add year
+for(row in 1:(dim(all_features_3d)[1])) {
+  for(starting_col in 1:segs_per_country) {
+    seg_row <- ((row-1)*segs_per_country) + starting_col
+    segmented_full_data[seg_row,,] <- all_features_3d[row,starting_col:(starting_col+max_len),]
+  }
+}
+```
+
+```{r}
+# split into test and train
+X_RNN_full_data <- segmented_full_data[,,-1]
+y_RNN_full_data <- segmented_full_data[,,1]
+
+set.seed(43)
+train_indices <- sample(1:(dim(segmented_full_data)[1]), dim(segmented_full_data)[1]*.8)
+
+# training data
+X_RNN_full_train <- X_RNN_full_data[train_indices,,]
+y_RNN_full_train <- y_RNN_full_data[train_indices,]
+
+# testing data
+X_RNN_full_test <- X_RNN_full_data[-train_indices,,]
+y_RNN_full_test <- y_RNN_full_data[-train_indices,]
+```
+
+```{r}
+batch_size <- 64 # number of sequences to look at at one time during training
+total_epochs <- 100 # how many times we'll look @ the whole dataset while training our model
+
+
+# model one
+model_1 <- keras_model_sequential() %>%
+  layer_dense(input_shape = dim(X_RNN_full_train)[2:3], units = max_len) %>%
+  layer_simple_rnn(units = 128, name="RNN_1",
+                   activation = "relu",
+                   return_sequences = TRUE) %>%
+  layer_dense(units = 1)
+
+model_1 %>% compile(loss = "mean_squared_error",   # which loss to use
+          optimizer = "RMSprop",     # how to optimize the loss
+          metrics = c("mean_absolute_error"))             # how to evaluate the fit
+
+
+# model two
+model_2 <- keras_model_sequential() %>%
+  layer_dense(input_shape = dim(X_RNN_full_train)[2:3], units = max_len) %>%
+  layer_simple_rnn(units = 128, name="RNN_1",
+                   activation = "relu",
+                   return_sequences = TRUE) %>%
+  layer_simple_rnn(units = 64, name="RNN_2",
+                   activation = "relu",
+                   return_sequences = TRUE) %>%
+  layer_dense(units = 1)
+
+model_2 %>% compile(loss = "mean_squared_error",   # which loss to use
+          optimizer = "RMSprop",     # how to optimize the loss
+          metrics = c("mean_absolute_error"))             # how to evaluate the fit
+
+# model three
+model_3 <- keras_model_sequential() %>%
+  layer_dense(input_shape = dim(X_RNN_full_train)[2:3], units = max_len) %>%
+  layer_simple_rnn(units = 128, name="RNN_1",
+                   activation = "relu",
+                   return_sequences = TRUE) %>%
+  layer_simple_rnn(units = 64, name="RNN_2",
+                   activation = "relu",
+                   return_sequences = TRUE) %>%
+  layer_simple_rnn(units = 64, name="RNN_3",
+                   activation = "relu",
+                   return_sequences = TRUE) %>%
+  layer_dense(units = 1)
+
+model_3 %>% compile(loss = "mean_squared_error",   # which loss to use
+          optimizer = "RMSprop",     # how to optimize the loss
+          metrics = c("mean_absolute_error"))             # how to evaluate the fit
+```
+
+```{r}
+# Actually train our model! This step will take a while
+trained_model_1 <- model_1 %>% fit(
+    x = X_RNN_full_train, # sequence we're using for prediction 
+    y = y_RNN_full_train, # sequence we're predicting
+    batch_size = batch_size, # how many samples to pass to our model at a time
+    epochs = total_epochs, # how many times we'll look @ the whole dataset
+    validation_split = 0.25) # how much data to hold out for testing as we go along
+
+trained_model_2 <- model_2 %>% fit(
+    x = X_RNN_full_train, # sequence we're using for prediction 
+    y = y_RNN_full_train, # sequence we're predicting
+    batch_size = batch_size, # how many samples to pass to our model at a time
+    epochs = total_epochs, # how many times we'll look @ the whole dataset
+    validation_split = 0.25) # how much data to hold out for testing as we go along
+
+trained_model_3 <- model_3 %>% fit(
+    x = X_RNN_full_train, # sequence we're using for prediction 
+    y = y_RNN_full_train, # sequence we're predicting
+    batch_size = batch_size, # how many samples to pass to our model at a time
+    epochs = total_epochs, # how many times we'll look @ the whole dataset
+    validation_split = 0.25) # how much data to hold out for testing as we go along
+
+
+```
+
+```{r}
+# RNN model comparison
+model_1_mean_abs_error <- 
+  as.numeric(evaluate(model_1, X_RNN_full_test, y_RNN_full_test, verbose = FALSE)[2])
+model_2_mean_abs_error <- 
+  as.numeric(evaluate(model_2, X_RNN_full_test, y_RNN_full_test, verbose = FALSE)[2])
+model_3_mean_abs_error <- 
+  as.numeric(evaluate(model_3, X_RNN_full_test, y_RNN_full_test, verbose = FALSE)[2])
+
+rnn_model_errs_tibble <- tribble(~model_1, ~model_2, ~model_3,
+        model_1_mean_abs_error, model_2_mean_abs_error, model_3_mean_abs_error)
+rnn_model_errs_tibble
+```
+
+```{r}
+# feature importance throgh scrambling
+# pseudocode until I get internet
+scrambled_feature_mse_vector <- rep(0, (dim(X_RNN_full_test)[3]-1))
+for (feature in 1:(dim(X_RNN_full_test)[3]-1)) {
+  scrambled_3d <- X_RNN_full_test
+  for (t in 1:(dim(scrambled_3d)[2])) {
+    scrambled_3d[,t,feature] <- sample(scrambled_3d[,t,feature],
+                                       length(scrambled_3d[,t,feature]),
+                                       replace = FALSE)
+  }
+  # print("scrambling feature")
+  # print
+  scrambled_feature_mse_vector[feature] <-
+    as.numeric(evaluate(model_2, scrambled_3d, 
+                        y_RNN_full_test, verbose = FALSE)[2])
+}
+model_2_err <- rnn_model_errs_tibble %>% pull(model_2)
+feature_vector <- to_3d_all_features %>%
+  slice(2:(dim(X_RNN_full_test)[3])) %>%
+  pull(`Indicator Code`)
+scrambled_feature_mse_vector
+scrambled_feature_tibble <- tibble(feature_number = c(1:(dim(scrambled_3d)[3]-1)),
+                                   deviance = scrambled_feature_mse_vector - model_2_err,
+                                   feature_name = feature_vector) %>%
+  arrange(desc(deviance))
+
+scrambled_feature_tibble
+```
+
+# Model evaluation
 
 Broad topics: 
 - Economic Policy & Debt, Education, Environment, Financial Sector, Gender, Health, Infrastructure, Poverty, Private Sector & Trade, Public Sector, Social Protection & Labor, World Bank, International Debt Statistics
