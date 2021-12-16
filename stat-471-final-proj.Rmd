@@ -887,6 +887,12 @@ growth_bootstrap_grid = expand.grid(
 pcap_bootstrap_grid <- growth_bootstrap_grid
 both_bootstrap_grid <- growth_bootstrap_grid
 
+zero_count_var_tibble <- tibble(variable = c(colnames(indicators_plm)[3:10], 
+                             colnames(indicators_plm)[12:30]),
+                             values = c(0))
+times_var_important <- zero_count_var_tibble %>% 
+  pivot_wider(names_from = "variable", values_from = "values")
+
 get_lags <- function(response, limit) {
   str <- ""
   if (limit > 0) {
@@ -1135,85 +1141,123 @@ for (i in 0:max_lags) {
                   na.action= "na.omit",
                   model="within") - resp_10yr)^2, na.rm=TRUE)
   
+  
+  
   # extract number significant features
   growth_bootstrap_grid$num_sig_features_1yr[iteration] =
     model_1yr_growth_tibble %>% filter(!grepl("lag", variable)) %>%
-    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
   growth_bootstrap_grid$num_sig_features_3yr[iteration] =
     model_3yr_growth_tibble %>% filter(!grepl("lag", variable)) %>%
-    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
   growth_bootstrap_grid$num_sig_features_5yr[iteration] =
     model_5yr_growth_tibble %>% filter(!grepl("lag", variable)) %>%
-    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
   growth_bootstrap_grid$num_sig_features_10yr[iteration] =
     model_10yr_growth_tibble %>% filter(!grepl("lag", variable)) %>%
-    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
   
   pcap_bootstrap_grid$num_sig_features_1yr[iteration] =
     model_1yr_pcap_tibble %>% filter(!grepl("lag", variable)) %>%
-    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
   pcap_bootstrap_grid$num_sig_features_3yr[iteration] =
     model_3yr_pcap_tibble %>% filter(!grepl("lag", variable)) %>%
-    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
   pcap_bootstrap_grid$num_sig_features_5yr[iteration] =
     model_5yr_pcap_tibble %>% filter(!grepl("lag", variable)) %>%
-    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
   pcap_bootstrap_grid$num_sig_features_10yr[iteration] =
     model_10yr_pcap_tibble %>% filter(!grepl("lag", variable)) %>%
-    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
   
   both_bootstrap_grid$num_sig_features_1yr[iteration] =
     model_1yr_both_tibble %>% filter(!grepl("lag", variable)) %>%
-    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
   both_bootstrap_grid$num_sig_features_3yr[iteration] =
     model_3yr_both_tibble %>% filter(!grepl("lag", variable)) %>%
-    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
   both_bootstrap_grid$num_sig_features_5yr[iteration] =
     model_5yr_both_tibble %>% filter(!grepl("lag", variable)) %>%
-    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
   both_bootstrap_grid$num_sig_features_10yr[iteration] =
     model_10yr_both_tibble %>% filter(!grepl("lag", variable)) %>%
-    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
   
   # extract number significant lags
   growth_bootstrap_grid$num_sig_lags_1yr[iteration] =
     model_1yr_growth_tibble %>% filter(grepl("lag", variable)) %>%
-    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
   growth_bootstrap_grid$num_sig_lags_3yr[iteration] =
     model_3yr_growth_tibble %>% filter(grepl("lag", variable)) %>%
-    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
   growth_bootstrap_grid$num_sig_lags_5yr[iteration] =
     model_5yr_growth_tibble %>% filter(grepl("lag", variable)) %>%
-    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
   growth_bootstrap_grid$num_sig_lags_10yr[iteration] =
     model_10yr_growth_tibble %>% filter(grepl("lag", variable)) %>%
-    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
   
   pcap_bootstrap_grid$num_sig_lags_1yr[iteration] =
     model_1yr_pcap_tibble %>% filter(grepl("lag", variable)) %>%
-    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
   pcap_bootstrap_grid$num_sig_lags_3yr[iteration] =
     model_3yr_pcap_tibble %>% filter(grepl("lag", variable)) %>%
-    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
   pcap_bootstrap_grid$num_sig_lags_5yr[iteration] =
     model_5yr_pcap_tibble %>% filter(grepl("lag", variable)) %>%
-    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
   pcap_bootstrap_grid$num_sig_lags_10yr[iteration] =
     model_10yr_pcap_tibble %>% filter(grepl("lag", variable)) %>%
-    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
   
   both_bootstrap_grid$num_sig_lags_1yr[iteration] =
     model_1yr_both_tibble %>% filter(grepl("lag", variable)) %>%
-    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
   both_bootstrap_grid$num_sig_lags_3yr[iteration] =
     model_3yr_both_tibble %>% filter(grepl("lag", variable)) %>%
-    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
   both_bootstrap_grid$num_sig_lags_5yr[iteration] =
     model_5yr_both_tibble %>% filter(grepl("lag", variable)) %>%
-    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
  both_bootstrap_grid$num_sig_lags_10yr[iteration] =
     model_10yr_both_tibble %>% filter(grepl("lag", variable)) %>%
-    filter(`Pr(>|t|)` < 0.5 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% summarise(n = n()) %>% pull(n)
+ 
+ 
+ # count # times significant each variable
+  this_round_sig_vars <- bind_rows(
+    model_1yr_growth_tibble %>% filter(!grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% select(variable),
+    model_3yr_growth_tibble %>% filter(!grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% select(variable),
+    model_5yr_growth_tibble %>% filter(!grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% select(variable),
+    model_10yr_growth_tibble %>% filter(!grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% select(variable),
+    
+    model_1yr_pcap_tibble %>% filter(!grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% select(variable),
+    model_3yr_pcap_tibble %>% filter(!grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% select(variable),
+    model_5yr_pcap_tibble %>% filter(!grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% select(variable),
+    model_10yr_pcap_tibble %>% filter(!grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% select(variable),
+    
+    model_1yr_both_tibble %>% filter(!grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% select(variable),
+    model_3yr_both_tibble %>% filter(!grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% select(variable),
+    model_5yr_both_tibble %>% filter(!grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% select(variable),
+    model_10yr_both_tibble %>% filter(!grepl("lag", variable)) %>%
+    filter(`Pr(>|t|)` < 0.05 | `Pr(>|t|)` > 0.95) %>% select(variable)
+  ) %>% group_by(variable) %>% summarise(count = n()) %>% ungroup() %>%
+    right_join(zero_count_var_tibble, by = c("variable" = "variable")) %>%
+    mutate(round_count = replace_na(count, 0)) %>% select(-values, -count) %>%
+    pivot_wider(names_from = "variable", values_from = "round_count")
+  times_var_important <- bind_rows(times_var_important, this_round_sig_vars)
+  
   }
   
   gdp_growth_lags_grid$test_mse_1yr[i] = mean(growth_bootstrap_grid$test_mse_1yr, na.rm=TRUE)
@@ -1256,6 +1300,8 @@ for (i in 0:max_lags) {
   gdp_both_lags_grid$num_sig_features_10yr[i] = mean(both_bootstrap_grid$num_sig_features_10yr, na.rm=TRUE)
   gdp_both_lags_grid$num_sig_lags_10yr[i] = mean(both_bootstrap_grid$num_sig_lags_10yr, na.rm=TRUE)
 }
+
+FINAL_times_plm_coef_sig <- colSums(times_var_important)
 ```
 ```{r, cache = TRUE, include=FALSE}
 gdp_growth_lags_grid <- as_tibble(gdp_growth_lags_grid) %>%
@@ -1312,7 +1358,8 @@ to_3d_all_features <- indicators_plm %>%
   pivot_longer(cols=c(Conflict, NV.AGR.TOTL.ZS:`3yr_growth`), names_to = "Indicator Code", values_to = "vals") %>%
   filter(Year > 1986) %>% # filter out years with null response
   pivot_wider(names_from = Year, values_from = vals) %>%
-  arrange(`Country Name`, `Indicator Code`) %>% drop_na()
+  arrange(`Country Name`, `Indicator Code`) %>% drop_na() %>%
+  filter(!(`Country Name` %in% c("Congo, Dem. Rep.", "Gambia, The")))
 
 to_3d_all_features %>% group_by(`Country Name`) %>%
   summarise(count = n())
@@ -1345,68 +1392,125 @@ for (row in 1:nrow(to_3d_all_features)) {
 
 # add year as a variable
 for (year in 1:num_years) {
-  all_features_3d[,year,num_features+1] <- year+1990
+  all_features_3d[,year,num_features+1] <- year+1986
 }
-
 ```
 
 
 ```{r, cache = TRUE, include=FALSE}
 # cut into sections
 # set some parameters for our model
-max_len <- 4 # the number of previous examples we'll look at
+# max_len ... this time let's try different values
 stride <- 1 # striding between segments when selecting time series data
-segs_per_country <- (num_years - max_len)/stride
+segs_per_country_maxlen3 <- (num_years - 3)/stride
+segs_per_country_maxlen4 <- (num_years - 4)/stride
+segs_per_country_maxlen5 <- (num_years - 5)/stride
 
 # get a list of start indexes for our (overlapping) chunks
-segmented_full_data <- array(dim = c(num_countries*segs_per_country, 
-                                max_len+1, num_features+1)) # add year
+max_len_3_data <- array(dim = c(num_countries*segs_per_country_maxlen3, 
+                                3+1, # num of prev value + current value
+                                num_features+1)) # add year
+max_len_4_data <- array(dim = c(num_countries*segs_per_country_maxlen4, 
+                                4+1, # num of prev value + current value
+                                num_features+1)) # add year
+max_len_5_data <- array(dim = c(num_countries*segs_per_country_maxlen5, 
+                                5+1, # num of prev value + current value
+                                num_features+1)) # add year
+
 for(row in 1:(dim(all_features_3d)[1])) {
-  for(starting_col in 1:segs_per_country) {
-    seg_row <- ((row-1)*segs_per_country) + starting_col
-    segmented_full_data[seg_row,,] <- all_features_3d[row,starting_col:(starting_col+max_len),]
+  for(starting_col in 1:segs_per_country_maxlen3) {
+    seg_row <- ((row-1)*segs_per_country_maxlen3) + starting_col
+    max_len_3_data[seg_row,,] <- all_features_3d[row,starting_col:(starting_col+3),]
   }
 }
+for(row in 1:(dim(all_features_3d)[1])) {
+  for(starting_col in 1:(num_years - 4)) {
+    seg_row <- ((row-1)*(num_years - 4)) + starting_col
+    max_len_4_data[seg_row,,] <- all_features_3d[row,starting_col:(starting_col+4),]
+  }
+}
+for(row in 1:(dim(all_features_3d)[1])) {
+  for(starting_col in 1:(num_years - 5)) {
+    seg_row <- ((row-1)*(num_years - 5)) + starting_col
+    max_len_5_data[seg_row,,] <- all_features_3d[row,starting_col:(starting_col+5),]
+  }
+}
+
 ```
 
 ```{r, cache = TRUE, include=FALSE}
+# max_len 3 data
 # split into test and train
-X_RNN_full_data <- segmented_full_data[,,-1]
-y_RNN_full_data <- segmented_full_data[,,1]
+X_RNN_full_data_maxlen3 <- max_len_3_data[,,-1]
+y_RNN_full_data_maxlen3 <- max_len_3_data[,,1]
 
 set.seed(43)
-train_indices <- sample(1:(dim(segmented_full_data)[1]), dim(segmented_full_data)[1]*.8)
+train_indices_maxlen3 <- sample(1:(dim(max_len_3_data)[1]), dim(max_len_3_data)[1]*.8)
 
 # training data
-X_RNN_full_train <- X_RNN_full_data[train_indices,,]
-y_RNN_full_train <- y_RNN_full_data[train_indices,]
+X_RNN_full_train_maxlen3 <- X_RNN_full_data_maxlen3[train_indices_maxlen3,,]
+y_RNN_full_train_maxlen3 <- y_RNN_full_data_maxlen3[train_indices_maxlen3,]
 
 # testing data
-X_RNN_full_test <- X_RNN_full_data[-train_indices,,]
-y_RNN_full_test <- y_RNN_full_data[-train_indices,]
+X_RNN_full_test_maxlen3 <- X_RNN_full_data_maxlen3[-train_indices_maxlen3,,]
+y_RNN_full_test_maxlen3 <- y_RNN_full_data_maxlen3[-train_indices_maxlen3,]
+
+# max_len 4 data
+# split into test and train
+X_RNN_full_data_maxlen4 <- max_len_4_data[,,-1]
+y_RNN_full_data_maxlen4 <- max_len_4_data[,,1]
+
+set.seed(43)
+train_indices_maxlen4 <- sample(1:(dim(max_len_4_data)[1]), dim(max_len_4_data)[1]*.8)
+
+# training data
+X_RNN_full_train_maxlen4 <- X_RNN_full_data_maxlen4[train_indices_maxlen4,,]
+y_RNN_full_train_maxlen4 <- y_RNN_full_data_maxlen4[train_indices_maxlen4,]
+
+# testing data
+X_RNN_full_test_maxlen4 <- X_RNN_full_data_maxlen4[-train_indices_maxlen4,,]
+y_RNN_full_test_maxlen4 <- y_RNN_full_data_maxlen4[-train_indices_maxlen4,]
+
+
+# max_len 5 data
+# split into test and train
+X_RNN_full_data_maxlen5 <- max_len_5_data[,,-1]
+y_RNN_full_data_maxlen5 <- max_len_5_data[,,1]
+
+set.seed(43)
+train_indices_maxlen5 <- sample(1:(dim(max_len_5_data)[1]), dim(max_len_5_data)[1]*.8)
+
+# training data
+X_RNN_full_train_maxlen5 <- X_RNN_full_data_maxlen5[train_indices_maxlen5,,]
+y_RNN_full_train_maxlen5 <- y_RNN_full_data_maxlen3[train_indices_maxlen5,]
+
+# testing data
+X_RNN_full_test_maxlen5 <- X_RNN_full_data_maxlen3[-train_indices_maxlen5,,]
+y_RNN_full_test_maxlen5 <- y_RNN_full_data_maxlen3[-train_indices_maxlen5,]
+
 ```
 
 ```{r, cache = TRUE, include=FALSE}
 batch_size <- 64 # number of sequences to look at at one time during training
 total_epochs <- 100 # how many times we'll look @ the whole dataset while training our model
 
-
+# maxlen 3
 # model one
-model_1 <- keras_model_sequential() %>%
-  layer_dense(input_shape = dim(X_RNN_full_train)[2:3], units = max_len) %>%
+complex_1_maxlen_3 <- keras_model_sequential() %>%
+  layer_dense(input_shape = dim(X_RNN_full_train_maxlen3)[2:3], units = max_len) %>%
   layer_simple_rnn(units = 128, name="RNN_1",
                    activation = "relu",
                    return_sequences = TRUE) %>%
   layer_dense(units = 1)
 
-model_1 %>% compile(loss = "mean_squared_error",   # which loss to use
+complex_1_maxlen_3 %>% compile(loss = "mean_squared_error",   # which loss to use
           optimizer = "RMSprop",     # how to optimize the loss
           metrics = c("mean_absolute_error"))             # how to evaluate the fit
 
 
 # model two
-model_2 <- keras_model_sequential() %>%
-  layer_dense(input_shape = dim(X_RNN_full_train)[2:3], units = max_len) %>%
+complex_2_maxlen_3 <- keras_model_sequential() %>%
+  layer_dense(input_shape = dim(X_RNN_full_train_maxlen3)[2:3], units = max_len) %>%
   layer_simple_rnn(units = 128, name="RNN_1",
                    activation = "relu",
                    return_sequences = TRUE) %>%
@@ -1415,13 +1519,13 @@ model_2 <- keras_model_sequential() %>%
                    return_sequences = TRUE) %>%
   layer_dense(units = 1)
 
-model_2 %>% compile(loss = "mean_squared_error",   # which loss to use
+complex_2_maxlen_3 %>% compile(loss = "mean_squared_error",   # which loss to use
           optimizer = "RMSprop",     # how to optimize the loss
           metrics = c("mean_absolute_error"))             # how to evaluate the fit
 
 # model three
-model_3 <- keras_model_sequential() %>%
-  layer_dense(input_shape = dim(X_RNN_full_train)[2:3], units = max_len) %>%
+complex_3_maxlen_3 <- keras_model_sequential() %>%
+  layer_dense(input_shape = dim(X_RNN_full_train_maxlen3)[2:3], units = max_len) %>%
   layer_simple_rnn(units = 128, name="RNN_1",
                    activation = "relu",
                    return_sequences = TRUE) %>%
@@ -1433,49 +1537,209 @@ model_3 <- keras_model_sequential() %>%
                    return_sequences = TRUE) %>%
   layer_dense(units = 1)
 
-model_3 %>% compile(loss = "mean_squared_error",   # which loss to use
+complex_3_maxlen_3 %>% compile(loss = "mean_squared_error",   # which loss to use
+          optimizer = "RMSprop",     # how to optimize the loss
+          metrics = c("mean_absolute_error"))             # how to evaluate the fit
+
+
+# maxlen 4
+# model one
+complex_1_maxlen_4 <- keras_model_sequential() %>%
+  layer_dense(input_shape = dim(X_RNN_full_train_maxlen4)[2:3], units = max_len) %>%
+  layer_simple_rnn(units = 128, name="RNN_1",
+                   activation = "relu",
+                   return_sequences = TRUE) %>%
+  layer_dense(units = 1)
+
+complex_1_maxlen_4 %>% compile(loss = "mean_squared_error",   # which loss to use
+          optimizer = "RMSprop",     # how to optimize the loss
+          metrics = c("mean_absolute_error"))             # how to evaluate the fit
+
+
+# model two
+complex_2_maxlen_4 <- keras_model_sequential() %>%
+  layer_dense(input_shape = dim(X_RNN_full_train_maxlen4)[2:3], units = max_len) %>%
+  layer_simple_rnn(units = 128, name="RNN_1",
+                   activation = "relu",
+                   return_sequences = TRUE) %>%
+  layer_simple_rnn(units = 64, name="RNN_2",
+                   activation = "relu",
+                   return_sequences = TRUE) %>%
+  layer_dense(units = 1)
+
+complex_2_maxlen_4 %>% compile(loss = "mean_squared_error",   # which loss to use
+          optimizer = "RMSprop",     # how to optimize the loss
+          metrics = c("mean_absolute_error"))             # how to evaluate the fit
+
+# model three
+complex_3_maxlen_4 <- keras_model_sequential() %>%
+  layer_dense(input_shape = dim(X_RNN_full_train_maxlen4)[2:3], units = max_len) %>%
+  layer_simple_rnn(units = 128, name="RNN_1",
+                   activation = "relu",
+                   return_sequences = TRUE) %>%
+  layer_simple_rnn(units = 64, name="RNN_2",
+                   activation = "relu",
+                   return_sequences = TRUE) %>%
+  layer_simple_rnn(units = 64, name="RNN_3",
+                   activation = "relu",
+                   return_sequences = TRUE) %>%
+  layer_dense(units = 1)
+
+complex_3_maxlen_4 %>% compile(loss = "mean_squared_error",   # which loss to use
+          optimizer = "RMSprop",     # how to optimize the loss
+          metrics = c("mean_absolute_error"))             # how to evaluate the fit
+
+
+
+# maxlen 3
+# model one
+complex_1_maxlen_5 <- keras_model_sequential() %>%
+  layer_dense(input_shape = dim(X_RNN_full_train_maxlen5)[2:3], units = max_len) %>%
+  layer_simple_rnn(units = 128, name="RNN_1",
+                   activation = "relu",
+                   return_sequences = TRUE) %>%
+  layer_dense(units = 1)
+
+complex_1_maxlen_5 %>% compile(loss = "mean_squared_error",   # which loss to use
+          optimizer = "RMSprop",     # how to optimize the loss
+          metrics = c("mean_absolute_error"))             # how to evaluate the fit
+
+
+# model two
+complex_2_maxlen_5 <- keras_model_sequential() %>%
+  layer_dense(input_shape = dim(X_RNN_full_train_maxlen5)[2:3], units = max_len) %>%
+  layer_simple_rnn(units = 128, name="RNN_1",
+                   activation = "relu",
+                   return_sequences = TRUE) %>%
+  layer_simple_rnn(units = 64, name="RNN_2",
+                   activation = "relu",
+                   return_sequences = TRUE) %>%
+  layer_dense(units = 1)
+
+complex_2_maxlen_5 %>% compile(loss = "mean_squared_error",   # which loss to use
+          optimizer = "RMSprop",     # how to optimize the loss
+          metrics = c("mean_absolute_error"))             # how to evaluate the fit
+
+# model three
+complex_3_maxlen_5 <- keras_model_sequential() %>%
+  layer_dense(input_shape = dim(X_RNN_full_train_maxlen5)[2:3], units = max_len) %>%
+  layer_simple_rnn(units = 128, name="RNN_1",
+                   activation = "relu",
+                   return_sequences = TRUE) %>%
+  layer_simple_rnn(units = 64, name="RNN_2",
+                   activation = "relu",
+                   return_sequences = TRUE) %>%
+  layer_simple_rnn(units = 64, name="RNN_3",
+                   activation = "relu",
+                   return_sequences = TRUE) %>%
+  layer_dense(units = 1)
+
+complex_3_maxlen_5 %>% compile(loss = "mean_squared_error",   # which loss to use
           optimizer = "RMSprop",     # how to optimize the loss
           metrics = c("mean_absolute_error"))             # how to evaluate the fit
 ```
 
 ```{r, cache = TRUE, include=FALSE}
 # Actually train our model! This step will take a while
-trained_model_1 <- model_1 %>% fit(
-    x = X_RNN_full_train, # sequence we're using for prediction 
-    y = y_RNN_full_train, # sequence we're predicting
+complex_1_maxlen_3 %>% fit(
+    x = X_RNN_full_train_maxlen3, # sequence we're using for prediction 
+    y = y_RNN_full_train_maxlen3, # sequence we're predicting
     batch_size = batch_size, # how many samples to pass to our model at a time
     epochs = total_epochs, # how many times we'll look @ the whole dataset
     validation_split = 0.25) # how much data to hold out for testing as we go along
 
-trained_model_2 <- model_2 %>% fit(
-    x = X_RNN_full_train, # sequence we're using for prediction 
-    y = y_RNN_full_train, # sequence we're predicting
+complex_2_maxlen_3 %>% fit(
+    x = X_RNN_full_train_maxlen3, # sequence we're using for prediction 
+    y = y_RNN_full_train_maxlen3, # sequence we're predicting
     batch_size = batch_size, # how many samples to pass to our model at a time
     epochs = total_epochs, # how many times we'll look @ the whole dataset
     validation_split = 0.25) # how much data to hold out for testing as we go along
 
-trained_model_3 <- model_3 %>% fit(
-    x = X_RNN_full_train, # sequence we're using for prediction 
-    y = y_RNN_full_train, # sequence we're predicting
+complex_3_maxlen_3 %>% fit(
+    x = X_RNN_full_train_maxlen3, # sequence we're using for prediction 
+    y = y_RNN_full_train_maxlen3, # sequence we're predicting
     batch_size = batch_size, # how many samples to pass to our model at a time
     epochs = total_epochs, # how many times we'll look @ the whole dataset
     validation_split = 0.25) # how much data to hold out for testing as we go along
 
+
+complex_1_maxlen_4 %>% fit(
+    x = X_RNN_full_train_maxlen4, # sequence we're using for prediction 
+    y = y_RNN_full_train_maxlen4, # sequence we're predicting
+    batch_size = batch_size, # how many samples to pass to our model at a time
+    epochs = total_epochs, # how many times we'll look @ the whole dataset
+    validation_split = 0.25) # how much data to hold out for testing as we go along
+
+complex_2_maxlen_4 %>% fit(
+    x = X_RNN_full_train_maxlen4, # sequence we're using for prediction 
+    y = y_RNN_full_train_maxlen4, # sequence we're predicting
+    batch_size = batch_size, # how many samples to pass to our model at a time
+    epochs = total_epochs, # how many times we'll look @ the whole dataset
+    validation_split = 0.25) # how much data to hold out for testing as we go along
+
+complex_3_maxlen_4 %>% fit(
+    x = X_RNN_full_train_maxlen4, # sequence we're using for prediction 
+    y = y_RNN_full_train_maxlen4, # sequence we're predicting
+    batch_size = batch_size, # how many samples to pass to our model at a time
+    epochs = total_epochs, # how many times we'll look @ the whole dataset
+    validation_split = 0.25) # how much data to hold out for testing as we go along
+
+complex_1_maxlen_5 %>% fit(
+    x = X_RNN_full_train_maxlen5, # sequence we're using for prediction 
+    y = y_RNN_full_train_maxlen5, # sequence we're predicting
+    batch_size = batch_size, # how many samples to pass to our model at a time
+    epochs = total_epochs, # how many times we'll look @ the whole dataset
+    validation_split = 0.25) # how much data to hold out for testing as we go along
+
+complex_2_maxlen_5 %>% fit(
+    x = X_RNN_full_train_maxlen5, # sequence we're using for prediction 
+    y = y_RNN_full_train_maxlen5, # sequence we're predicting
+    batch_size = batch_size, # how many samples to pass to our model at a time
+    epochs = total_epochs, # how many times we'll look @ the whole dataset
+    validation_split = 0.25) # how much data to hold out for testing as we go along
+
+complex_3_maxlen_5 %>% fit(
+    x = X_RNN_full_train_maxlen5, # sequence we're using for prediction 
+    y = y_RNN_full_train_maxlen5, # sequence we're predicting
+    batch_size = batch_size, # how many samples to pass to our model at a time
+    epochs = total_epochs, # how many times we'll look @ the whole dataset
+    validation_split = 0.25) # how much data to hold out for testing as we go along
 
 ```
 
 ```{r, cache = TRUE, include=FALSE}
 # RNN model comparison
-model_1_mean_abs_error <- 
-  as.numeric(evaluate(model_1, X_RNN_full_test, y_RNN_full_test, verbose = FALSE)[2])
-model_2_mean_abs_error <- 
-  as.numeric(evaluate(model_2, X_RNN_full_test, y_RNN_full_test, verbose = FALSE)[2])
-model_3_mean_abs_error <- 
-  as.numeric(evaluate(model_3, X_RNN_full_test, y_RNN_full_test, verbose = FALSE)[2])
+complex1_maxlen3_mean_abs_error <- 
+  as.numeric(evaluate(complex_1_maxlen_3, X_RNN_full_test_maxlen3, y_RNN_full_test_maxlen3, verbose = FALSE)[2])
+complex2_maxlen3_mean_abs_error <- 
+  as.numeric(evaluate(complex_2_maxlen_3, X_RNN_full_test_maxlen3, y_RNN_full_test_maxlen3, verbose = FALSE)[2])
+complex3_maxlen3_mean_abs_error <- 
+  as.numeric(evaluate(complex_3_maxlen_3, X_RNN_full_test_maxlen3, y_RNN_full_test_maxlen3, verbose = FALSE)[2])
 
-rnn_model_errs_tibble <- tribble(~model_1, ~model_2, ~model_3,
-        model_1_mean_abs_error, model_2_mean_abs_error, model_3_mean_abs_error)
-rnn_model_errs_tibble
+complex1_maxlen4_mean_abs_error <- 
+  as.numeric(evaluate(complex_1_maxlen_4, X_RNN_full_test_maxlen4, y_RNN_full_test_maxlen4, verbose = FALSE)[2])
+complex2_maxlen4_mean_abs_error <- 
+  as.numeric(evaluate(complex_2_maxlen_4, X_RNN_full_test_maxlen4, y_RNN_full_test_maxlen4, verbose = FALSE)[2])
+complex3_maxlen4_mean_abs_error <- 
+  as.numeric(evaluate(complex_3_maxlen_4, X_RNN_full_test_maxlen4, y_RNN_full_test_maxlen4, verbose = FALSE)[2])
+
+complex1_maxlen5_mean_abs_error <- 
+  as.numeric(evaluate(complex_1_maxlen_5, X_RNN_full_test_maxlen5, y_RNN_full_test_maxlen5, verbose = FALSE)[2])
+complex2_maxlen5_mean_abs_error <- 
+  as.numeric(evaluate(complex_2_maxlen_5, X_RNN_full_test_maxlen5, y_RNN_full_test_maxlen5, verbose = FALSE)[2])
+complex3_maxlen5_mean_abs_error <- 
+  as.numeric(evaluate(complex_3_maxlen_5, X_RNN_full_test_maxlen5, y_RNN_full_test_maxlen5, verbose = FALSE)[2])
+
+rnn_model_errs_tibble <- 
+  tibble(
+    complexity = c("One layer", "Two layers", "Three layers"),
+    max_len_3 = c(complex1_maxlen3_mean_abs_error, complex2_maxlen3_mean_abs_error, 
+                  complex3_maxlen3_mean_abs_error),
+    max_len_4 = c(complex1_maxlen4_mean_abs_error, complex2_maxlen4_mean_abs_error,
+                  complex3_maxlen4_mean_abs_error),
+    max_len_5 = c(complex1_maxlen5_mean_abs_error, complex2_maxlen5_mean_abs_error, 
+                  complex3_maxlen5_mean_abs_error)
+  )
 ```
 
 ```{r, cache = TRUE, include=FALSE}
@@ -1671,19 +1935,124 @@ tribble(~abs_loss, as.numeric(evaluate(model_part_1, X_test_RNN_continuous_GDP, 
   kable_styling(latex_options = "HOLD_position")
 ```
 
-The model, with very minimal tuning, Table \@ref(tab:model1-abs-acc) shows that this model can predict real GDP per capita within around $7500 USD. That's not perfect, but according to 2021 figures, that's substantially *less* than the difference between the US and Canada or the difference between the UK and Australia. It's, perhaps as expected, very directionally accurate with just the above four features.
+The model, with very minimal tuning, Table \@ref(tab:model1-abs-acc) shows that this model can predict real GDP per capita within around $7500 USD. That's not perfect, but according to 2021 figures, that's substantially *less* than the difference between the US and Canada or the difference between Australia and the UK It's, perhaps as expected, very directionally accurate with just the above four features.
 
 Again, this model does not have very much tuning. I decided to save time to have the vast majority of tuning be for my models for [Part II: Economic Structure and Economic Growth], which is more involved and more relevant to what I wanted to study with this project. 
 
 ## Part II: Economic Structure and Economic Growth
 
-This section is fundamentally different from the above [Part I: Economic Structure and Economic Development Level] in two ways. First, this section 
+This section is fundamentally different from the above [Part I: Economic Structure and Economic Development Level] in two ways. First, this section uses vastly many more features to try to generate a more complex and predictive model (28 in total, as opposed to Part I's 4.) Second, while the Part I looked at the relationship between the distribution of employment in an economy and its contemporaneous GDP per capita, this section aims to understand how the allocation of resources (interpreted more broadly than just labor this time) affect economic *growth* in the short-to-medium term.
+
+Again, for this section, I manually created four different response variables. Each represented the percentage change in GDP from year 0 to year n, with the time periods being 1 year, 3 years, 5 years and 10 years.  
 
 ### Model 1: Linear Methods (Linear Models for Panel Data)
 
+Since ordinary least squares is no good on panel data, I used the `plm` panel data estimators function from the `plm` package to create these linear models. Through the incorporation of time- and entity-invariant fixed effects, such a model can provide much more reliable coefficient estimates for panel data. 
+
+To tune these models, I gave each formulation an extremely high degree of personalization; I tried unique combinations of all the following features:
+
+First, I tried the different time periods to define "economic growth" as the response variable. Second, I tried models with one to eight lags in them. Each lag is an interaction term of a value from a previous year which takes a coefficient (that may or may not be significant). Lastly, I tried three models of lags: models that contained lags of GDP per capita from previous years, lags that contained annual growth rates from previous years, and models that contained both kinds of lags.  
+
+```{r, echo=FALSE}
+tibble(personalization_feature = c("Response Variable", "Lag Number", "Lag Type"),
+       types = c("1, 3, 5, 10 year growth period", 
+                 "1 to 8 lags",
+                 "GDP per capita, annual growth or both")) %>%
+  kable(format = "latex", row.names = NA,
+                        booktabs = TRUE,
+                        digits = 3,
+                        col.names = c("Personalizaation Feature",
+                                      "Types"),
+        caption = "Features of Different Linear Model Specifications Tried") %>%
+  kable_styling(position = "center") %>%
+  kable_styling(latex_options = "HOLD_position")
+  
+```
+
+```{r plm-tuning-results, echo=FALSE}
+param_grid_combined %>% 
+  pivot_longer(cols = c(scaled_1yr, scaled_3yr, scaled_5yr, scaled_10yr),
+               names_to = "growth_period",
+               values_to = "scaled_test_mse") %>%
+  ggplot(aes(x = lags, y = scaled_test_mse, 
+             shape = growth_period, colour = lag_type)) +
+  geom_point() +
+  geom_smooth(se = FALSE)
+```
+Because of the high variance in test MSE, the number of significant features and significant lags across all different linear model specifications, I bootstrapped the calculations. As you can see in Figure \@ref(fig:plm-tuning-results), there still is a very high degree of variance in the results. However, there are a few conclusions that I drew from playing around the different tuning parameters. The first is that past annual growth rates are a much better predictor of future growth than past GDP per capita, as evidenced by the red lines in Figure \@ref(fig:plm-tuning-results) hanging much lower than the green ones. The second clear conclusion is that the lags are a much better predictor of future growth than most of the other features in the model. The lags are almost always significant, while most features almost always are not. Lastly, since in absolute test MSE as the growth period extended only increased, I standardized the test MSE values with respect to the growth period that they have as a response variable. Once standardized, it interestingly enough doesn't appear that a longer growth period tends to lead to worse predictive power.
+
+```{r plm-var-imp-tibble, echo=FALSE}
+wdi_series %>% filter(`Series Code` %in% indicators) %>% 
+  select(`Series Code`, `Indicator Name`) %>% 
+  inner_join(enframe(FINAL_times_plm_coef_sig), by = c("Series Code" = "name")) %>%
+  arrange(desc(value)) %>% 
+  kable(format = "latex", row.names = NA,
+                        booktabs = TRUE,
+                        digits = 3,
+                        col.names = c("Indicator Code",
+                          "Indicator Name",
+                                      "Times in Model Feature Signficiant"),
+        caption = "Features of Different Linear Model Specifications Tried") %>%
+  kable_styling(position = "center") %>%
+  kable_styling(latex_options = "HOLD_position")
+  
+```
+```{r plm_var_importance_graph, cache = TRUE, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height = 4, out.width = "100%", fig.align='center', fig.cap = "Relative Variable Importances Averaged over Linear Models"}
+wdi_series %>% filter(`Series Code` %in% indicators) %>% 
+  select(`Series Code`, `Indicator Name`) %>% 
+  right_join(enframe(FINAL_times_plm_coef_sig), by = c("Series Code" = "name")) %>%
+  transmute(indicator = as.factor(`Indicator Name`), times = value) %>%
+  arrange(desc(times)) %>%
+  ggplot(aes(y = indicator, x = times)) +
+  geom_bar(position="dodge", stat="identity") +
+  labs(xlab = "Relative Importance", ylab = "Indicator", 
+       title = "Relative Variable Importances Averaged over Linear Models")
+```
+
+
+Table \@ref(tab:plm-var-imp-tibble) and \@ref(fig:plm_var_importance_graph) attempt to assess feature importance by counting the number of times that each feature was significant in a regression in the bootstrap sequence in [Model 1: Linear Methods (Linear Models for Panel Data)]. From the findings presented in Table \@ref(tab:plm-var-imp-tibble) and \@ref(fig:plm_var_importance_graph), perhaps one of the most interesting conclusion is that the variables that were used to build the RNN model above, which aimed to predict economic development level, were quite literally the least important features in the data set for predicting *economic growth*. However, the models show that there is a set of other variables which are quite important when it comes to predicting GDP growth. Gross capital formation makes a lot of sense, since more capital accumulation will inherently allow for more output. 
+
+
+```{r sig-lags-features, cache = TRUE, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height = 4, out.width = "100%", fig.align='center', fig.cap = "Number of Significant Lags and Features as Function of Lags"}
+# sig features 
+param_grid_combined %>% 
+  mutate(avg_sig_figs = (num_sig_features_1yr + 
+                           num_sig_features_3yr +
+                           num_sig_features_5yr + 
+                           num_sig_features_10yr)/4,
+         avg_sig_lags = (num_sig_lags_1yr + 
+                           num_sig_lags_3yr +
+                           num_sig_lags_5yr + 
+                           num_sig_lags_10yr)/4) %>%
+  group_by(lags) %>%
+  summarise(avg_sig_figs = mean(avg_sig_figs),
+            avg_sig_lags = mean(avg_sig_lags)) %>%
+  ggplot(aes(x = lags)) +
+  geom_point(aes(y = avg_sig_figs, colour = "red")) + 
+  geom_smooth(aes(y = avg_sig_figs, colour = "red"), se = FALSE) +
+  geom_point(aes(y = avg_sig_lags, colour = "blue")) + 
+  geom_smooth(aes(y = avg_sig_lags, colour = "blue"),se = FALSE) +
+  scale_color_manual(labels = 
+                       c("Lags", 
+                         "Features"), 
+                     values = c("blue", "red")) +
+  labs(xlab = "Number of Lags", ylab = "Average Number Significant",
+       title = "Average Number of Significant Lags and Features")
+  
+
+```
+
+Distribution of number of significant coefficients...
+
+How many times each feature was significant ...
+
+Conclusions about the best model...
+- Significant coefficients ...
+
+
 ### Model 2: Recurrent Neural Network
 
-Tune lag length!
+Tune lag length! param grid necessary 
 
 # Conclusions
 
