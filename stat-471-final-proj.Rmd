@@ -1,19 +1,18 @@
 ---
 title: "stat-471-final-proj"
-author: "Ethan"
-date: "12/2/2021"
+author: "Ethan Kallett"
+date: "12/19/2021"
 output:
   pdf_document: default
 ---
 
 # Executive Summary
 
-##Problem
+## Problem
 
 In 1933, after Josef Stalin replaced the then-deceased Vladimir Lenin as premier of the Soviet Union, he looked around at the much wealthier nations to his West and noticed one key commonality – Great Britain, France and Germany all had well-developed industrial sectors. Stalin made the reallocation of resources from agriculture to industry perhaps the defining feature of his three decades of rule, even when it came at the cost of the lives of 35+ million of his own citizens.
 
 This study sought to measure the impact of a “Big Push” – a massive reallocation of capital and labor from less productive (lower value-added) segments of the economy to higher value-added 
-Data
 
 ## Data
 
@@ -28,6 +27,10 @@ The first part of my project consists of an exploratory data analysis that attem
 The main focus of this assignment attempts to look at the relationship between the allocation of these resources and economic growth. I first pull 27 different covariates from the World Bank Development Indicators and a 28th focused on the level of armed conflict in different countries. First, I conducted a panel regression (through the plm package) of real GDP per capita growth (over various time periods) on the covariates identified and the different numbers of lags. Following this, I create a Recurrent Neural Network that predicts GDP per capita growth using the 28 features and a time length of 5 years for the samples. 
 
 ## Conclusions
+
+First, it is quite evident that a linear model is much more better suited for modeling this specific problem than a neural network. 
+
+Second, in terms of the interpretation of the models, the most important feature in determining economic growth would be capital accumulation per worker. This would suggest there was something correct about Joseph Stalin’s cruel logic, and that, in order to grow, an economy may have to reallocate resources to build up capital in a “big push”. Beyond this feature, other features such as natural resource rents, Gini index (inequality) and imports of goods and services are also very influential.
 
 # Introduction
 
@@ -53,7 +56,7 @@ Success is evaluated in various aspects. The first metric is test MSE, i.e. how 
 As countries across the world, particularly emerging market economies, strive to achieve sustainable growth to improve the quality of life of their citizens over the long run, studies like these are crucial. If a model can have a very low test MSE on the empirical data (meaning that it represents very well the underlying data generating process) and it is able to distinguish well between the features of which it is a part (indicating what are the important levers a “social planner” should pull), such a model would have enormous practical applications for governments across the world. Economic development leads to better economic lives for the majority of citizens of a country and aggregate gains in welfare can be huge.
 
 
-```{r setup, cache = TRUE, include=FALSE}
+```{r setup, cache = TRUE, include=FALSE, eval=TRUE}
 knitr::opts_chunk$set(echo = TRUE, lazy.cache = FALSE)
 library(tidyverse)
 library(cowplot)
@@ -84,10 +87,6 @@ conflict_df <-
   read_csv("/Users/ethan/Documents/R/stat-471-final-project/conflict.csv",
            col_names = TRUE)
 ```
-
-
-Part 1: Economic Structure and Income per Capita (EDA)
-
 ```{r plots-p1-p4, cache = TRUE, include=FALSE}
 # this part is almost an EDA
 
@@ -388,8 +387,8 @@ tens_boxplot <- summary_trinity_time_income_group %>%
   labs(x = "Income Group", y = "Share of Employment",
        title = "10s Distribution of Emp. by Sector by Income Group") +
   guides(fill=guide_legend(title="Sector")) +
-  theme(text = element_text(size=9),
-        legend.key.size = unit(0.5, 'cm'),
+  theme(text = element_text(size=40),
+        legend.key.size = unit(5, 'cm'),
         plot.title = element_text(hjust=0.5)) 
 ```
 
@@ -466,7 +465,10 @@ for(row in 4:nrow(within_model_data_imputed)) {
   row = row + 4
 }
 ```
-```{r, include=FALSE}
+
+
+```{r, echo=FALSE, eval=TRUE,cache=TRUE}
+library(tidyverse)
 GDP_yearly_average <- average_GDP_stats %>% 
   pivot_longer(-`Income Group`, names_to = "year", values_to = "gdp")
 GDP_yearly_average$year <- as.numeric(GDP_yearly_average$year)
@@ -475,12 +477,7 @@ GDP_yearly_average %>%
   ggplot(aes(x = year, y = gdp, colour = `Income Group`)) +
   geom_point()
 
-# You see that high income countries have grown a lot, but not low income countries
-# Potentially because low income countries that grow graduate to higher rankings, so you just have fewer countries
-# In these categories
 ```
-
-RNN: Continuous Regression on GDP per Capita
 
 ```{r, cache = TRUE, include=FALSE}
 num_countries <- dim(within_model_data_imputed %>% group_by(`Short Name`) %>%
@@ -558,7 +555,7 @@ y_test_RNN_continuous_GDP <- y_RNN_continuous_GDP[-train_indices,]
 
 ```
 
-```{r, include=FALSE}
+```{r, include=FALSE, cache=TRUE}
 batch_size <- 64 # number of sequences to look at at one time during training
 total_epochs <- 100 # how many times we'll look @ the whole dataset while training our model
 
@@ -590,11 +587,6 @@ model_part_1 %>% fit(
     validation_split = 0.33) # how much data to hold out for testing as we go along
 
 ```
-
-
-
-Part 2: Economic Structure and Income per Capita Growth
-
 ```{r, cache = TRUE, include=FALSE}
 # feature codes
 # outcome
@@ -793,8 +785,6 @@ for (row in 1:(dim(indicators_imputed)[1])) {
 indicators_imputed <- indicators_imputed %>% drop_na() # drop na country names
 
 ```
-Variable selection with best subset regression
-
 
 ```{r, cache = TRUE, include=FALSE}
 # Wrangle into correct format
@@ -1351,11 +1341,12 @@ summary(plm(best_call, data = pseries_train,
 
 RNN model
 
-```{r, cache = TRUE, include=FALSE}
+```{r, cache = TRUE, include=FALSE, eval=FALSE}
 # wrangle the data into 3 dimensions
 to_3d_all_features <- indicators_plm %>% 
   select(-`1yr_growth`, -`5yr_growth`, -`10yr_growth`, -country_id) %>% # select 3 yr growth as response
   pivot_longer(cols=c(Conflict, NV.AGR.TOTL.ZS:`3yr_growth`), names_to = "Indicator Code", values_to = "vals") %>%
+  #filter(!(`Indicator Code` == "NY.GDP.PCAP.CD")) %>%
   filter(Year > 1986) %>% # filter out years with null response
   pivot_wider(names_from = Year, values_from = vals) %>%
   arrange(`Country Name`, `Indicator Code`) %>% drop_na() %>%
@@ -1397,7 +1388,7 @@ for (year in 1:num_years) {
 ```
 
 
-```{r, cache = TRUE, include=FALSE}
+```{r, cache = TRUE, include=FALSE, eval=FALSE}
 # cut into sections
 # set some parameters for our model
 # max_len ... this time let's try different values
@@ -1438,7 +1429,7 @@ for(row in 1:(dim(all_features_3d)[1])) {
 
 ```
 
-```{r, cache = TRUE, include=FALSE}
+```{r, cache = TRUE, include=FALSE, eval=FALSE}
 # max_len 3 data
 # split into test and train
 X_RNN_full_data_maxlen3 <- max_len_3_data[,,-1]
@@ -1482,15 +1473,15 @@ train_indices_maxlen5 <- sample(1:(dim(max_len_5_data)[1]), dim(max_len_5_data)[
 
 # training data
 X_RNN_full_train_maxlen5 <- X_RNN_full_data_maxlen5[train_indices_maxlen5,,]
-y_RNN_full_train_maxlen5 <- y_RNN_full_data_maxlen3[train_indices_maxlen5,]
+y_RNN_full_train_maxlen5 <- y_RNN_full_data_maxlen5[train_indices_maxlen5,]
 
 # testing data
-X_RNN_full_test_maxlen5 <- X_RNN_full_data_maxlen3[-train_indices_maxlen5,,]
-y_RNN_full_test_maxlen5 <- y_RNN_full_data_maxlen3[-train_indices_maxlen5,]
+X_RNN_full_test_maxlen5 <- X_RNN_full_data_maxlen5[-train_indices_maxlen5,,]
+y_RNN_full_test_maxlen5 <- y_RNN_full_data_maxlen5[-train_indices_maxlen5,]
 
 ```
 
-```{r, cache = TRUE, include=FALSE}
+```{r, cache = TRUE, include=FALSE, eval=FALSE}
 batch_size <- 64 # number of sequences to look at at one time during training
 total_epochs <- 100 # how many times we'll look @ the whole dataset while training our model
 
@@ -1639,7 +1630,7 @@ complex_3_maxlen_5 %>% compile(loss = "mean_squared_error",   # which loss to us
           metrics = c("mean_absolute_error"))             # how to evaluate the fit
 ```
 
-```{r, cache = TRUE, include=FALSE}
+```{r, cache = TRUE, include=FALSE, eval=FALSE}
 # Actually train our model! This step will take a while
 complex_1_maxlen_3 %>% fit(
     x = X_RNN_full_train_maxlen3, # sequence we're using for prediction 
@@ -1707,7 +1698,7 @@ complex_3_maxlen_5 %>% fit(
 
 ```
 
-```{r, cache = TRUE, include=FALSE}
+```{r, cache = TRUE, include=FALSE, eval=FALSE}
 # RNN model comparison
 complex1_maxlen3_mean_abs_error <- 
   as.numeric(evaluate(complex_1_maxlen_3, X_RNN_full_test_maxlen3, y_RNN_full_test_maxlen3, verbose = FALSE)[2])
@@ -1740,36 +1731,33 @@ rnn_model_errs_tibble <-
     max_len_5 = c(complex1_maxlen5_mean_abs_error, complex2_maxlen5_mean_abs_error, 
                   complex3_maxlen5_mean_abs_error)
   )
+write.table(rnn_model_errs_tibble, "rnn-model-comparison")
 ```
 
-```{r, cache = TRUE, include=FALSE}
+```{r, cache = TRUE, include=FALSE, eval=FALSE}
 # feature importance throgh scrambling
-# pseudocode until I get internet
-scrambled_feature_mse_vector <- rep(0, (dim(X_RNN_full_test)[3]-1))
-for (feature in 1:(dim(X_RNN_full_test)[3]-1)) {
-  scrambled_3d <- X_RNN_full_test
+scrambled_feature_mse_vector <- rep(0, (dim(X_RNN_full_test_maxlen5)[3]-1))
+for (feature in 1:(dim(X_RNN_full_test_maxlen5)[3]-1)) {
+  scrambled_3d <- X_RNN_full_test_maxlen5
   for (t in 1:(dim(scrambled_3d)[2])) {
     scrambled_3d[,t,feature] <- sample(scrambled_3d[,t,feature],
                                        length(scrambled_3d[,t,feature]),
                                        replace = FALSE)
   }
-  # print("scrambling feature")
-  # print
   scrambled_feature_mse_vector[feature] <-
-    as.numeric(evaluate(model_2, scrambled_3d, 
-                        y_RNN_full_test, verbose = FALSE)[2])
+    as.numeric(evaluate(complex_2_maxlen_5, scrambled_3d, 
+                        y_RNN_full_test_maxlen5, verbose = FALSE)[2])
 }
-model_2_err <- rnn_model_errs_tibble %>% pull(model_2)
+min_rnn_err <- complex2_maxlen5_mean_abs_error
 feature_vector <- to_3d_all_features %>%
-  slice(2:(dim(X_RNN_full_test)[3])) %>%
+  slice(2:(dim(X_RNN_full_test_maxlen3)[3])) %>%
   pull(`Indicator Code`)
-scrambled_feature_mse_vector
+# scrambled_feature_mse_vector
 scrambled_feature_tibble <- tibble(feature_number = c(1:(dim(scrambled_3d)[3]-1)),
-                                   deviance = scrambled_feature_mse_vector - model_2_err,
+                                   deviance = scrambled_feature_mse_vector - min_rnn_err,
                                    feature_name = feature_vector) %>%
   arrange(desc(deviance))
-
-scrambled_feature_tibble
+write.table(scrambled_feature_tibble, "rnn-feature-scramble")
 ```
 
 # Data
@@ -1823,8 +1811,7 @@ tibble(stat = c("Number of Indicators",
 Summary statistics of the data can be seen from Table \@ref(tab:data-description-1). There are a total of 5600 observations and 40 columns in the principal data set used, after value imputation. These observations can be divided into time series data (from 1984 to 2020) for 200 countries, grouped into 4 different income groups, across 28 different indicators. 
 
 ```{r feature-description, cache=TRUE, eval=TRUE, echo=FALSE}
-initial_tibble <- 
-  wdi_series %>% filter(`Series Code` %in% indicators) %>% 
+wdi_series %>% filter(`Series Code` %in% indicators) %>% 
   select(`Series Code`, `Indicator Name`) %>%
   add_row(`Series Code` = "Conflict", 
           `Indicator Name` = "Sqrt of conflict deaths given country and year") %>%
@@ -1832,11 +1819,10 @@ initial_tibble <-
   kable(format = "latex", row.names = NA,
                         booktabs = TRUE,
                         digits = 3,
-                        col.names = c("Indicator Code",
-                                      "Indicator Name"),
         caption = "List of Indicators Used in Analysis") %>%
   kable_styling(position = "center") %>%
   kable_styling(latex_options = "HOLD_position")
+
 ```
 
 The 28 different features considered in the data set are listed in Table \@ref(tab:feature-description). However, these features should be considered only 27, since the variable `NY.GDP.PCAP.CD` or `GDP per capita (current US$)` was used to construct the response variables. In [Part II: Economic Structure and Economic Growth], the response variable was continuous, and was defined as a the percentage change in GDP of a given observation (country) over a certain period of time. This could be calculated as (GDP in year n - GDP in year 0)/GDP in year 0. The time periods of 1 year, 3 years, 5 years and 10 years were all tried on the data set. 
@@ -1867,20 +1853,23 @@ From Figure \@ref(fig:plot-grid-p1-p3), it is very visible that there is a clear
 tens_boxplot
 ```
 
+
 Figure \@ref(fig:tens-boxplot) further affirms the strength of the connection between economic mix and GDP per capita. Not only are the averages so disparate across income groups, but that distributions are also very tight. Outliers in this data set are very few, and even if you look at the outliers with the highest share of agriculture in the "High income group", they all have a lower share of the economy dedicated to agriculture than the median "Upper middle income" country. 
 
 
-```{r share-over-time-change-plot, cache = TRUE, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height = 5, out.width = "100%", fig.align='center', fig.cap = "Sector Share Change by Income Group 1991-2019"}
+```{r share-over-time-change-plot, cache = TRUE, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 9, fig.height = 5, out.width = "100%", fig.align='center', fig.cap = "Sector Share Change by Income Group 1991-2019"}
 shares_change_over_time %>%
   ggplot(aes(x = year, y = share, colour=indicator)) +
   geom_point() +
   facet_wrap(~`Income Group`) +
-  scale_x_discrete(breaks = seq(1991, 2019, by = 5))
+  scale_x_discrete(breaks = seq(1991, 2019, by = 5)) +
+  labs(xlab = "Year", ylab = "Share of Empoyment") + 
+  theme_bw()
 ```
 
 Figure \@ref(fig:share-over-time-change-plot) shows us the importance of controlling for time in any model. The relative share of the economy dedicated to services has exploded across all income groups. Likewise, the share dedicated to agriculture has fallen through time in all income groups, as well, though the decline was perhaps more precipitous in poorer countries than in richer countries. 
 
-```{r pct-chg-groups-time-tibble, echo=FALSE, message=FALSE, warning=FALSE}
+```{r pct-chg-groups-time-tibble, echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE}
 pct_change_groups_time %>% kable(format = "latex", row.names = NA,
                         booktabs = TRUE,
                         digits = 3,
@@ -1895,12 +1884,12 @@ pct_change_groups_time %>% kable(format = "latex", row.names = NA,
 
 Table \@ref(tab:pct-chg-groups-time-tibble) again shows that the economies are not static. Subject to market forces, they have been evolving over time in an enormous way (think of how much time and resources it takes to train a smallholder farmer to be a teacher, bus driver, programmer, banker, or another professional in the service industry). Table \@ref(tab:pct-chg-groups-time-tibble) shows that changes to the percentage of the economy engaged in industry have been modest, with rich countries experiencing a slight deindustrialization and poor countries experiencing slight gains in industry employment However, the data also show that the decrease in the percentage of the economy engaged in agriculture is very positively correlated with income. Conversely, again, although that the absolute gains in the service industry may be modest in poor countries, in relative terms, the poorest countries were the ones that have experienced the most dramatic shifts to a service-based economy.
 
-```{r gdpcap-time-plot, cache = TRUE, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height = 4, out.width = "100%", fig.align='center', fig.cap = "1991-2019 GDP per Capita by Income Group"}
+```{r gdpcap-time-plot, cache = TRUE, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 8, fig.height = 3, out.width = "100%", fig.align='center', fig.cap = "1991-2019 GDP per Capita by Income Group"}
 GDP_yearly_average %>% 
   ggplot(aes(x = year, y = gdp, colour = `Income Group`)) +
   geom_point() +
   labs(xlab = "Year", ylab = "Mean GDP (PPP) per Capita", title = "GDP per Capita by Income Group") +
-  theme_bw()
+  theme(plot.title = element_text(hjust=0.5))
 ```
 
 Figure \@ref(fig:gdpcap-time-plot) shows the limitations of relying on static, 2020 classifications of country by income group. We can see from the data that rich countries have grown enormously while poor countries have remained trapped in low levels of growth. This begs the question of whether or not these poor economies have really not experienced growth, or whether there have just been a number of poor countries that have "graduated" to the status of a richer country. And, looking at the above charts, if this phenomenon exists, would the poor countries that emphasize services over agriculture be the ones that graduate to rich countries, thus giving us the massive differences across income groups that we see? These questions and many more motivate [Part II: Economic Structure and Economic Growth], where I, quite ambitiously, attempt to assess how resource allocation affects economic growth over the short-to-medium term.
@@ -1969,7 +1958,7 @@ tibble(personalization_feature = c("Response Variable", "Lag Number", "Lag Type"
   
 ```
 
-```{r plm-tuning-results, echo=FALSE}
+```{r plm-tuning-results, cache = TRUE, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 9, fig.height = 4, out.width = "100%", fig.align='center', fig.cap = "Comparison of the Results of Different Parameters for the Linear Model"}
 param_grid_combined %>% 
   pivot_longer(cols = c(scaled_1yr, scaled_3yr, scaled_5yr, scaled_10yr),
                names_to = "growth_period",
@@ -1977,7 +1966,10 @@ param_grid_combined %>%
   ggplot(aes(x = lags, y = scaled_test_mse, 
              shape = growth_period, colour = lag_type)) +
   geom_point() +
-  geom_smooth(se = FALSE)
+  geom_smooth(se = FALSE) +
+  labs(xlab = "Number of Lags", ylab="Scaled Test MSE",
+       title = "Comparison of Parameters for Linear Model") +
+  theme(plot.title = element_text(hjust=0.5))
 ```
 Because of the high variance in test MSE, the number of significant features and significant lags across all different linear model specifications, I bootstrapped the calculations. As you can see in Figure \@ref(fig:plm-tuning-results), there still is a very high degree of variance in the results. However, there are a few conclusions that I drew from playing around the different tuning parameters. The first is that past annual growth rates are a much better predictor of future growth than past GDP per capita, as evidenced by the red lines in Figure \@ref(fig:plm-tuning-results) hanging much lower than the green ones. The second clear conclusion is that the lags are a much better predictor of future growth than most of the other features in the model. The lags are almost always significant, while most features almost always are not. Lastly, since in absolute test MSE as the growth period extended only increased, I standardized the test MSE values with respect to the growth period that they have as a response variable. Once standardized, it interestingly enough doesn't appear that a longer growth period tends to lead to worse predictive power.
 
@@ -1997,23 +1989,27 @@ wdi_series %>% filter(`Series Code` %in% indicators) %>%
   kable_styling(latex_options = "HOLD_position")
   
 ```
-```{r plm_var_importance_graph, cache = TRUE, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height = 4, out.width = "100%", fig.align='center', fig.cap = "Relative Variable Importances Averaged over Linear Models"}
+```{r plm_var_importance_graph, cache = TRUE, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 9, fig.height = 9, out.width = "100%", fig.align='center', fig.cap = "Relative Variable Importances Averaged over Linear Models"}
 wdi_series %>% filter(`Series Code` %in% indicators) %>% 
   select(`Series Code`, `Indicator Name`) %>% 
   right_join(enframe(FINAL_times_plm_coef_sig), by = c("Series Code" = "name")) %>%
-  transmute(indicator = as.factor(`Indicator Name`), times = value) %>%
+  mutate(indicator_clean = replace_na(`Indicator Name`, "Conflict")) %>% 
+  transmute(indicator = as.factor(indicator_clean), times = value) %>%
   arrange(desc(times)) %>%
   ggplot(aes(y = indicator, x = times)) +
   geom_bar(position="dodge", stat="identity") +
   labs(xlab = "Relative Importance", ylab = "Indicator", 
-       title = "Relative Variable Importances Averaged over Linear Models")
+       title = "Relative Variable Importances Averaged over Linear Models") +
+  theme(text = element_text(size=15),
+        legend.key.size = unit(0.5, 'cm')) 
+  
 ```
 
 
-Table \@ref(tab:plm-var-imp-tibble) and \@ref(fig:plm_var_importance_graph) attempt to assess feature importance by counting the number of times that each feature was significant in a regression in the bootstrap sequence in [Model 1: Linear Methods (Linear Models for Panel Data)]. From the findings presented in Table \@ref(tab:plm-var-imp-tibble) and \@ref(fig:plm_var_importance_graph), perhaps one of the most interesting conclusion is that the variables that were used to build the RNN model above, which aimed to predict economic development level, were quite literally the least important features in the data set for predicting *economic growth*. However, the models show that there is a set of other variables which are quite important when it comes to predicting GDP growth. Gross capital formation makes a lot of sense, since more capital accumulation will inherently allow for more output. 
+Table \@ref(tab:plm-var-imp-tibble) and \@ref(fig:plm_var_importance_graph) attempt to assess feature importance by counting the number of times that each feature was significant in a regression in the bootstrap sequence in [Model 1: Linear Methods (Linear Models for Panel Data)]. From the findings presented in Table \@ref(tab:plm-var-imp-tibble) and \@ref(fig:plm_var_importance_graph), perhaps one of the most interesting conclusion is that the variables that were used to build the RNN model above, which aimed to predict economic development level, were quite literally the least important features in the data set for predicting *economic growth*. However, the models show that there is a set of other variables which are quite important when it comes to predicting GDP growth. Gross capital formation makes a lot of sense, since more capital accumulation will inherently allow for more output. This was exactly the logic behind Stalinism: extract surplus from the peasants in order to increase the capital per worker ratio. `Natural resource rents` is an interesting important variable, since traditional economics would argue that resource rents prevent a country from innovating a dynamic economy away from those resource endowments (The "resource curse"). Or, since this chart only describes variable importance, it's very possible that the conclusion to be made from here is that the majority of resource rich countries (e.g. Saudi Arabia, United Arab Emirates, Norway, Canada) manage their mineral wealth wisely.
 
 
-```{r sig-lags-features, cache = TRUE, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height = 4, out.width = "100%", fig.align='center', fig.cap = "Number of Significant Lags and Features as Function of Lags"}
+```{r sig-lags-features, cache = TRUE, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 8, fig.height = 4, out.width = "100%", fig.align='center', fig.cap = "Number of Significant Lags and Features as Function of Lags"}
 # sig features 
 param_grid_combined %>% 
   mutate(avg_sig_figs = (num_sig_features_1yr + 
@@ -2042,28 +2038,81 @@ param_grid_combined %>%
 
 ```
 
-Distribution of number of significant coefficients...
-
-How many times each feature was significant ...
-
-Conclusions about the best model...
-- Significant coefficients ...
+Figure \@ref(tab:sig-lags-features) shows that, as we add more lags to the model, they are almost always significant. Given this phenomenon, though, it's quite interesting that the number of significant features only decreases incredibly slightly as the the number of lags increases. The number of significant features stays pretty consistent around 10, even when plots like \@ref(fig:plm_var_importance_graph) show that those approximately 10 features must be very different in different bootstrapped models.
 
 
 ### Model 2: Recurrent Neural Network
 
-Tune lag length! param grid necessary 
+For the recurrent neural network portion of this assignment, I decided to construct neural networks that tune along two different parameters. The first parameter tuned for is model complexity, defined as the number of layers in the neural network and the number of nodes in each layer. For this parameter, since there are infinite many values it could take, I chose three different models, one with one layer, one with two layers and one with three. The second parameter I tuned for is the temporal length of each "strip" of data. In other words, when the RNN model is given a sequence of values to determine the predicted outcome, how many years of previous data are represented in this strip? For this component, I chose the values 3, 4 and 5 years of previous data. I tried every combination of these 2 different parameters for a total of 9 different RNN models created. 
+
+```{r rnn-param-comparison, echo=FALSE, eval=TRUE}
+read.table("rnn-model-comparison") %>% 
+  kable(format = "latex", row.names = NA,
+                        booktabs = TRUE,
+                        digits = 3,
+                        col.names = c("Model Complexity",
+                          "3 Previous Values",
+                                      "4 Previous Values",
+                          "5 Previous Values"),
+        caption = "Comparison of RNN Model test MSE against Specifications") %>%
+  kable_styling(position = "center") %>%
+  kable_styling(latex_options = "HOLD_position")
+  
+```
+
+After training each model, each model was then run on a 20% share of the data held out as validation data. Interestingly enough, although the simplest model which looks at 5 years of previous data had the worst test MSE, Table \@ref(tab:rnn-param-comparison) shows the best parameter selection was that of the two-layer model that looks at 5 years of previous data. The reason that the one-layer 5-previous-year model is so bad compared to the other models is that, with more years of data, the model needs more parameters in order to be able to better fit the underlying trends. 
+
+```{r rnn-feature-scramble, eval=TRUE, echo=FALSE}
+read.table("rnn-feature-scramble") %>% left_join((wdi_series %>% filter(`Series Code` %in% indicators) %>% 
+  select(`Series Code`, `Indicator Name`)),
+  by = c("feature_name" = "Series Code")) %>% select(-feature_number) %>%
+    kable(format = "latex", row.names = NA,
+                        booktabs = TRUE,
+                        digits = 3,
+                        col.names = c("Deviance",
+                          "Feature Code",
+                                      "Feature Name"),
+        caption = "Most Importance Features according to RNN Model") %>%
+  kable_styling(position = "center") %>%
+  kable_styling(latex_options = "HOLD_position")
+```
+
+To determine feature importance, I scrambled the values of each f and observed how much it reduced the accuracy of the predictions. Perhaps as I should have expected, the most important feature by far according to Table \@ref(tab:rnn-feature-scramble) is GDP per capita. This is interesting, because in the linear model, using GDP per capita as past lags was not nearly as powerful as using annual GDP per capita growth rates as the lags. 
+
+Even more interestingly, the second most important variable in this model is `Agriculture, forestry, and fishing, value added per worker`. This is also quite interesting and unexpected, since we've observed that richer economies transition out of agriculture and into services. However, this might make sense, since in rich economies that have transitioned out of agriculture, only the most productive workers will remain in the industry. This can easily be seen by how farmers in a country like the US have heavy machinery, fertilizers and pesticides which will increase their yields to something that smallholder farmers in low income countries with just wooden tools could only dream of.
+
+However, the results from this model are quite alarming, since the majority of the coefficients are very close to zero. In fact, there are even a few features whose values, when scrambled, slightly *improve* the test MSE. This is ridiculous, and I conclude this is a function of there just not being enough data to create a neural network model for this problems in this domain.
+
 
 # Conclusions
 
 ## Method Comparison
 
+When comparing the recurrent neural network model with the linear model, it's clear that, in terms of absolute reduction in test MSE, the neural network appears to do much better. However, models are only as good as they are useful, and assessing feature importance through scrambling for the neural network revealed that the model may as well have been guessing. It didn't offer very much insight into which variables were the truly important ones driving economic growth. Most features had importances near zero in the model, and some for some features, scrambling resulted in an even *worse* prediction than on the unscrambled data. 
+
+In contrast, by counting how often a coefficient on the the linear model was significant, we were able to learn a lot more about the influence of each of the constituent variables in the model. The linear model better satisfied many of our preconceived notions that sparsity does *not* hold, and that each of these decorrelated features should have some sort of unique contribution, however large, to the economic growth and development of an economy. This, however, comes with the caveat that we assume that the relationships between these variables and the response is anything but linear. Moreover, we assume that all of these features have unique and complex interactions, which would imply that a neural network would potentially be a better model if we were given the data.
+
+In conclusion, given that data in this problem was so limited, I believe that linear models were a much better fit for this problem than neural networks ever could be. 
+
 ## Takeaways
+
+I think that perhaps one of the most powerful components of this project was [Part I: Economic Structure and Economic Development Level]. The simplicity of the model I used may be frowned upon by economists who say that a lack of variables would mean that my findings would be worthless because of hidden variable bias. This is without a doubt a problem with such simplicity, but on the other hand, such simplicity allows for such great model interpretability that you may learn a lot more from analyzing a lot less. 
+
+In terms of interpreting the coefficients from the linear model, the most shocking conclusion is that perhaps there was a grain of truth in the horrors committed by dictator Joseph Stalin. It shows that the most important variable by far is capital accumulation per worker. This would lend credence to the theory that a government, in order to grow it's economy, should intervene to reduce consumption and thus increase the capital stock, which can then be utilized to create more capital stock. 
+
+Another fascinating observation is that the three features I used to construct a relatively accurate recurrent neural network in [Part I: Economic Structure and Economic Development Level], the share of employment in agriculture, industry and services, though great at predicting current GDP per capita, are declared by the linear model in [Model 1: Linear Methods (Linear Models for Panel Data)] to be the least useful features in the data set.
 
 ## Limitations
 
+Perhaps the greatest limitation of this study was just a lack of data. Before value imputation, the data was really spare and prevented me from choosing a lot of the indicators that I wanted. Moreover, I can only reasonably extrapolate a certain amount from trends in the data, so the amount of value imputation that I could do was limited. There are only so many countries in the world and years on each country for which we have data. Furthermore, through value imputation, I'm very concerned that, since I'm using each income group as the group from which to calculate the averages, I am systematically making poor countries look more poor and rich countries look more rich. This would be an insidious kind of bias that really hinders the model.
+
+This lack of data truly hindered the accuracy of any model on this very complex phenomenon, whether it was linear, a neural network or some other form of model. This lack of data is something that economists have been struggling with forever, and is potentially why most economists are too shy to create a "theory of everything" model that tries to predict how much an economy will grow given a set of inputs. 
+Secondarily, in the development of the neural network, the choice of the parameters is very much more of an art than a science. It's very possible that if I added/substracted a few layers, added in a few more nodes, increased dropout et cetera, I would have developed a model that is substantially better than the one I currently have. However, since trying an infinite number of parameters is computationally infeasible, we will never know the answer to these hypothetical questions. 
+
 ## Follow-ups
 
-The neural net performs much much better
-- these relationships and dependencies I'm trying to model are anything but linear
+To follow up on this, I think that I would try some tree methods on this problem, since they were not tried. Tree methods don't need nearly as much data as neural networks, so they wouldn't have as much of a problem with the scarcity of data. Moreover, tree methods can allow for much more complex interactions among the features of a data set than linear methods, so there may be a lot of merit to their value in this domain.
 
+I think to solve the main problem, more data has to be gathered. There are only so many different countries in the world, but fortunately not every country is of the same size. Many countries that numerous regions inside of them that are as large as and economically (in)dependent as any other country. For that reason, I think it would be a phenomenal next step to repeat this methodology, but using panel data disaggregated to the level of the subnational region.
+
+Lastly, I want to say that economists have very traditionally relied on their econometric methods, attempting to assess the significance of variables and determine causality, and have not necessarily dipped into the very valuable vault of methods that data science has to offer. With more data, suddenly the simplicity of a linear difference-in-differences methodology seems very risky, because it's hard to expect such a relationship to be simply linear. 
