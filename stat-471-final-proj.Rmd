@@ -10,6 +10,10 @@ output:
 urlcolor: blue
 ---
 
+# Link to GitHub Repo
+
+https://github.com/ethanrimes/stat-471-final-project
+
 # Executive Summary
 
 ## Problem
@@ -581,7 +585,7 @@ model_part_1 %>% compile(loss = "mean_squared_error",   # which loss to use
           metrics = c("mean_absolute_error"))             # how to evaluate the fit
 ```
 
-```{r, cache = TRUE, include=FALSE}
+```{r, cache = TRUE, include=FALSE, eval=FALSE}
 # Actually train our model! This step will take a while
 model_part_1 %>% fit(
     x = X_train_RNN_continuous_GDP, # sequence we're using for prediction 
@@ -589,6 +593,8 @@ model_part_1 %>% fit(
     batch_size = batch_size, # how many samples to pass to our model at a time
     epochs = total_epochs, # how many times we'll look @ the whole dataset
     validation_split = 0.33) # how much data to hold out for testing as we go along
+
+save_model_hdf5(model_part_1, "model_part_1.h5")
 
 ```
 ```{r, cache = TRUE, include=FALSE}
@@ -1703,25 +1709,25 @@ complex_3_maxlen_5 %>% fit(
 ```{r, cache = TRUE, include=FALSE, eval=FALSE}
 # RNN model comparison
 complex1_maxlen3_mean_abs_error <- 
-  as.numeric(evaluate(complex_1_maxlen_3, X_RNN_full_test_maxlen3, y_RNN_full_test_maxlen3, verbose = FALSE)[2])
+  as.numeric(tensorflow::evaluate(complex_1_maxlen_3, X_RNN_full_test_maxlen3, y_RNN_full_test_maxlen3, verbose = FALSE)[2])
 complex2_maxlen3_mean_abs_error <- 
-  as.numeric(evaluate(complex_2_maxlen_3, X_RNN_full_test_maxlen3, y_RNN_full_test_maxlen3, verbose = FALSE)[2])
+  as.numeric(tensorflow::evaluate(complex_2_maxlen_3, X_RNN_full_test_maxlen3, y_RNN_full_test_maxlen3, verbose = FALSE)[2])
 complex3_maxlen3_mean_abs_error <- 
-  as.numeric(evaluate(complex_3_maxlen_3, X_RNN_full_test_maxlen3, y_RNN_full_test_maxlen3, verbose = FALSE)[2])
+  as.numeric(tensorflow::evaluate(complex_3_maxlen_3, X_RNN_full_test_maxlen3, y_RNN_full_test_maxlen3, verbose = FALSE)[2])
 
 complex1_maxlen4_mean_abs_error <- 
-  as.numeric(evaluate(complex_1_maxlen_4, X_RNN_full_test_maxlen4, y_RNN_full_test_maxlen4, verbose = FALSE)[2])
+  as.numeric(tensorflow::evaluate(complex_1_maxlen_4, X_RNN_full_test_maxlen4, y_RNN_full_test_maxlen4, verbose = FALSE)[2])
 complex2_maxlen4_mean_abs_error <- 
-  as.numeric(evaluate(complex_2_maxlen_4, X_RNN_full_test_maxlen4, y_RNN_full_test_maxlen4, verbose = FALSE)[2])
+  as.numeric(tensorflow::evaluate(complex_2_maxlen_4, X_RNN_full_test_maxlen4, y_RNN_full_test_maxlen4, verbose = FALSE)[2])
 complex3_maxlen4_mean_abs_error <- 
-  as.numeric(evaluate(complex_3_maxlen_4, X_RNN_full_test_maxlen4, y_RNN_full_test_maxlen4, verbose = FALSE)[2])
+  as.numeric(tensorflow::evaluate(complex_3_maxlen_4, X_RNN_full_test_maxlen4, y_RNN_full_test_maxlen4, verbose = FALSE)[2])
 
 complex1_maxlen5_mean_abs_error <- 
-  as.numeric(evaluate(complex_1_maxlen_5, X_RNN_full_test_maxlen5, y_RNN_full_test_maxlen5, verbose = FALSE)[2])
+  as.numeric(tensorflow::evaluate(complex_1_maxlen_5, X_RNN_full_test_maxlen5, y_RNN_full_test_maxlen5, verbose = FALSE)[2])
 complex2_maxlen5_mean_abs_error <- 
-  as.numeric(evaluate(complex_2_maxlen_5, X_RNN_full_test_maxlen5, y_RNN_full_test_maxlen5, verbose = FALSE)[2])
+  as.numeric(tensorflow::evaluate(complex_2_maxlen_5, X_RNN_full_test_maxlen5, y_RNN_full_test_maxlen5, verbose = FALSE)[2])
 complex3_maxlen5_mean_abs_error <- 
-  as.numeric(evaluate(complex_3_maxlen_5, X_RNN_full_test_maxlen5, y_RNN_full_test_maxlen5, verbose = FALSE)[2])
+  as.numeric(tensorflow::evaluate(complex_3_maxlen_5, X_RNN_full_test_maxlen5, y_RNN_full_test_maxlen5, verbose = FALSE)[2])
 
 rnn_model_errs_tibble <- 
   tibble(
@@ -1747,7 +1753,7 @@ for (feature in 1:(dim(X_RNN_full_test_maxlen5)[3]-1)) {
                                        replace = FALSE)
   }
   scrambled_feature_mse_vector[feature] <-
-    as.numeric(evaluate(complex_2_maxlen_5, scrambled_3d, 
+    as.numeric(tensorflow::evaluate(complex_2_maxlen_5, scrambled_3d, 
                         y_RNN_full_test_maxlen5, verbose = FALSE)[2])
 }
 min_rnn_err <- complex2_maxlen5_mean_abs_error
@@ -1808,6 +1814,7 @@ tibble(stat = c("Number of Indicators",
         caption = "Summary Statistics of Data with Value Imputation") %>%
   kable_styling(position = "center") %>%
   kable_styling(latex_options = "HOLD_position")
+  
 ```
 
 Summary statistics of the data can be seen from Table \@ref(tab:data-description-1). There are a total of 5600 observations and 40 columns in the principal data set used, after value imputation. These observations can be divided into time series data (from 1984 to 2020) for 200 countries, grouped into 4 different income groups, across 28 different indicators. 
@@ -1822,8 +1829,10 @@ wdi_series %>% filter(`Series Code` %in% indicators) %>%
                         booktabs = TRUE,
                         digits = 3,
         caption = "List of Indicators Used in Analysis") %>%
+  column_spec(2, width="4in") %>%
   kable_styling(position = "center") %>%
   kable_styling(latex_options = "HOLD_position")
+  
 
 ```
 
@@ -1876,12 +1885,13 @@ pct_change_groups_time %>% kable(format = "latex", row.names = NA,
                         booktabs = TRUE,
                         digits = 3,
                         col.names = c("Income Group",
-                                      "% Change Agriculture",
-                                      "% Change Industry",
-                                      "% Change Services"),
-        caption = "1991-2019 % Change in Share of Economy Dedicated to a Sector by Income Group") %>%
+                                      "Pct Change Agriculture",
+                                      "Pct Change Industry",
+                                      "Pct Change Services"),
+        caption = "1991-2019 Pct Change in Share of Economy Dedicated to a Sector by Income Group") %>%
   kable_styling(position = "center") %>%
   kable_styling(latex_options = "HOLD_position")
+  
 ```
 
 Table \@ref(tab:pct-chg-groups-time-tibble) again shows that the economies are not static. Subject to market forces, they have been evolving over time in an enormous way (think of how much time and resources it takes to train a smallholder farmer to be a teacher, bus driver, programmer, banker, or another professional in the service industry). Table \@ref(tab:pct-chg-groups-time-tibble) shows that changes to the percentage of the economy engaged in industry have been modest, with rich countries experiencing a slight deindustrialization and poor countries experiencing slight gains in industry employment However, the data also show that the decrease in the percentage of the economy engaged in agriculture is very positively correlated with income. Conversely, again, although that the absolute gains in the service industry may be modest in poor countries, in relative terms, the poorest countries were the ones that have experienced the most dramatic shifts to a service-based economy.
@@ -1916,7 +1926,8 @@ Using the handy imported `plot_model_history` function from class, we can see th
 Exactly how good are the predictions of the model?
 
 ```{r model1-abs-acc, cache=TRUE, eval=TRUE, echo=FALSE}
-tribble(~abs_loss, as.numeric(evaluate(model_part_1, X_test_RNN_continuous_GDP, y_test_RNN_continuous_GDP, verbose = FALSE)[2])) %>%
+model_part_1 = load_model_hdf5("model_part_1.h5")
+tribble(~abs_loss, as.numeric(tensorflow::evaluate(model_part_1, X_test_RNN_continuous_GDP, y_test_RNN_continuous_GDP, verbose = FALSE)[2])) %>%
   kable(format = "latex", row.names = NA,
                         booktabs = TRUE,
                         digits = 3,
@@ -1924,9 +1935,10 @@ tribble(~abs_loss, as.numeric(evaluate(model_part_1, X_test_RNN_continuous_GDP, 
         caption = "Accuracy of RNN Model on Test Data") %>%
   kable_styling(position = "center") %>%
   kable_styling(latex_options = "HOLD_position")
+  
 ```
 
-The model, with very minimal tuning, Table \@ref(tab:model1-abs-acc) shows that this model can predict real GDP per capita within around $5900 USD. That's not perfect, but according to 2021 figures, that's substantially *less* than the difference between the US and Canada or the difference between Australia and the UK. It's, perhaps as expected, very directionally accurate with just the above four features.
+The model, with very minimal tuning, Table \@ref(tab:model1-abs-acc) shows that this model can predict real GDP per capita within around 5500 USD. That's not perfect, but according to 2021 figures, that's substantially *less* than the difference between the US and Canada or the difference between Australia and the UK. It's, perhaps as expected, very directionally accurate with just the above four features.
 
 Again, this model does not have very much tuning. I decided to save time to have the vast majority of tuning be for my models for [Part II: Economic Structure and Economic Growth], which is more involved and more relevant to what I wanted to study with this project. 
 
@@ -1958,6 +1970,7 @@ tibble(personalization_feature = c("Response Variable", "Lag Number", "Lag Type"
   kable_styling(position = "center") %>%
   kable_styling(latex_options = "HOLD_position")
   
+  
 ```
 
 ```{r plm-tuning-results, cache = TRUE, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 9, fig.height = 4, out.width = "100%", fig.align='center', fig.cap = "Comparison of the Results of Different Parameters for the Linear Model"}
@@ -1986,29 +1999,15 @@ wdi_series %>% filter(`Series Code` %in% indicators) %>%
                         col.names = c("Indicator Code",
                           "Indicator Name",
                                       "Times in Model Feature Signficiant"),
-        caption = "Features of Different Linear Model Specifications Tried") %>%
+        caption = "Variable Importance in Linear Model") %>%
+  column_spec(2, width="3in") %>%
   kable_styling(position = "center") %>%
   kable_styling(latex_options = "HOLD_position")
   
-```
-```{r plm_var_importance_graph, cache = TRUE, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 9, fig.height = 9, out.width = "100%", fig.align='center', fig.cap = "Relative Variable Importances Averaged over Linear Models"}
-wdi_series %>% filter(`Series Code` %in% indicators) %>% 
-  select(`Series Code`, `Indicator Name`) %>% 
-  right_join(enframe(FINAL_times_plm_coef_sig), by = c("Series Code" = "name")) %>%
-  mutate(indicator_clean = replace_na(`Indicator Name`, "Conflict")) %>% 
-  transmute(indicator = as.factor(indicator_clean), times = value) %>%
-  arrange(desc(times)) %>%
-  ggplot(aes(y = indicator, x = times)) +
-  geom_bar(position="dodge", stat="identity") +
-  labs(xlab = "Relative Importance", ylab = "Indicator", 
-       title = "Relative Importance") +
-  theme(text = element_text(size=11),
-        legend.key.size = unit(0.5, 'cm')) 
   
 ```
 
-
-Table \@ref(tab:plm-var-imp-tibble) and \@ref(fig:plm_var_importance_graph) attempt to assess feature importance by counting the number of times that each feature was significant in a regression in the bootstrap sequence in [Model 1: Linear Methods (Linear Models for Panel Data)]. From the findings presented in Table \@ref(tab:plm-var-imp-tibble) and \@ref(fig:plm_var_importance_graph), perhaps one of the most interesting conclusion is that the variables that were used to build the RNN model above, which aimed to predict economic development level, were quite literally the least important features in the data set for predicting *economic growth*. However, the models show that there is a set of other variables which are quite important when it comes to predicting GDP growth. Gross capital formation makes a lot of sense, since more capital accumulation will inherently allow for more output. This was exactly the logic behind Stalinism: extract surplus from the peasants in order to increase the capital per worker ratio. `Natural resource rents` is an interesting important variable, since traditional economics would argue that resource rents prevent a country from innovating a dynamic economy away from those resource endowments (The "resource curse"). Or, since this chart only describes variable importance, it's very possible that the conclusion to be made from here is that the majority of resource rich countries (e.g. Saudi Arabia, United Arab Emirates, Norway, Canada) manage their mineral wealth wisely.
+Table \@ref(tab:plm-var-imp-tibble) attempts to assess feature importance by counting the number of times that each feature was significant in a regression in the bootstrap sequence in [Model 1: Linear Methods (Linear Models for Panel Data)]. From the findings presented in Table \@ref(tab:plm-var-imp-tibble), perhaps one of the most interesting conclusion is that the variables that were used to build the RNN model above, which aimed to predict economic development level, were quite literally the least important features in the data set for predicting *economic growth*. However, the models show that there is a set of other variables which are quite important when it comes to predicting GDP growth. Gross capital formation makes a lot of sense, since more capital accumulation will inherently allow for more output. This was exactly the logic behind Stalinism: extract surplus from the peasants in order to increase the capital per worker ratio. `Natural resource rents` is an interesting important variable, since traditional economics would argue that resource rents prevent a country from innovating a dynamic economy away from those resource endowments (The "resource curse"). Or, since this chart only describes variable importance, it's very possible that the conclusion to be made from here is that the majority of resource rich countries (e.g. Saudi Arabia, United Arab Emirates, Norway, Canada) manage their mineral wealth wisely.
 
 
 ```{r sig-lags-features, cache = TRUE, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 8, fig.height = 4, out.width = "100%", fig.align='center', fig.cap = "Number of Significant Lags and Features as Function of Lags"}
@@ -2030,12 +2029,15 @@ param_grid_combined %>%
   geom_smooth(aes(y = avg_sig_figs, colour = "red"), se = FALSE) +
   geom_point(aes(y = avg_sig_lags, colour = "blue")) + 
   geom_smooth(aes(y = avg_sig_lags, colour = "blue"),se = FALSE) +
+  labs(xlab = "Number of Lags", ylab = "Average Number Significant",
+       title = "Average Number of Significant Lags and Features") +
   scale_color_manual(labels = 
                        c("Lags", 
                          "Features"), 
                      values = c("blue", "red")) +
-  labs(xlab = "Number of Lags", ylab = "Average Number Significant",
-       title = "Average Number of Significant Lags and Features")
+  theme(plot.title = element_text(hjust=0.5))
+  
+  
   
 
 ```
@@ -2047,7 +2049,7 @@ Figure \@ref(tab:sig-lags-features) shows that, as we add more lags to the model
 
 For the recurrent neural network portion of this assignment, I decided to construct neural networks that tune along two different parameters. The first parameter tuned for is model complexity, defined as the number of layers in the neural network and the number of nodes in each layer. For this parameter, since there are infinite many values it could take, I chose three different models, one with one layer, one with two layers and one with three. The second parameter I tuned for is the temporal length of each "strip" of data. In other words, when the RNN model is given a sequence of values to determine the predicted outcome, how many years of previous data are represented in this strip? For this component, I chose the values 3, 4 and 5 years of previous data. I tried every combination of these 2 different parameters for a total of 9 different RNN models created. 
 
-```{r rnn-param-comparison, echo=FALSE, eval=TRUE}
+```{r rnn-param-comparison, echo=FALSE, eval=TRUE, cache=TRUE}
 read.table("rnn-model-comparison") %>% 
   kable(format = "latex", row.names = NA,
                         booktabs = TRUE,
@@ -2060,11 +2062,12 @@ read.table("rnn-model-comparison") %>%
   kable_styling(position = "center") %>%
   kable_styling(latex_options = "HOLD_position")
   
+  
 ```
 
 After training each model, each model was then run on a 20% share of the data held out as validation data. Interestingly enough, although the simplest model which looks at 5 years of previous data had the worst test MSE, Table \@ref(tab:rnn-param-comparison) shows the best parameter selection was that of the two-layer model that looks at 5 years of previous data. The reason that the one-layer 5-previous-year model is so bad compared to the other models is that, with more years of data, the model needs more parameters in order to be able to better fit the underlying trends. 
 
-```{r rnn-feature-scramble, eval=TRUE, echo=FALSE}
+```{r rnn-feature-scramble, eval=TRUE, echo=FALSE, cache=TRUE}
 read.table("rnn-feature-scramble") %>% left_join((wdi_series %>% filter(`Series Code` %in% indicators) %>% 
   select(`Series Code`, `Indicator Name`)),
   by = c("feature_name" = "Series Code")) %>% select(-feature_number) %>%
@@ -2075,8 +2078,10 @@ read.table("rnn-feature-scramble") %>% left_join((wdi_series %>% filter(`Series 
                           "Feature Code",
                                       "Feature Name"),
         caption = "Most Importance Features according to RNN Model") %>%
+  column_spec(2, width="3in") %>%
   kable_styling(position = "center") %>%
   kable_styling(latex_options = "HOLD_position")
+  
 ```
 
 To determine feature importance, I scrambled the values of each f and observed how much it reduced the accuracy of the predictions. Perhaps as I should have expected, the most important feature by far according to Table \@ref(tab:rnn-feature-scramble) is GDP per capita. This is interesting, because in the linear model, using GDP per capita as past lags was not nearly as powerful as using annual GDP per capita growth rates as the lags. 
