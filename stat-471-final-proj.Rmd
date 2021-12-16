@@ -3,7 +3,11 @@ title: "stat-471-final-proj"
 author: "Ethan Kallett"
 date: "12/19/2021"
 output:
-  pdf_document: default
+  bookdown::pdf_document2:
+    number_sections: yes
+    toc: yes
+    toc_depth: '3'
+urlcolor: blue
 ---
 
 # Executive Summary
@@ -467,7 +471,7 @@ for(row in 4:nrow(within_model_data_imputed)) {
 ```
 
 
-```{r, echo=FALSE, eval=TRUE,cache=TRUE}
+```{r, echo=FALSE, include=FALSE,cache=TRUE}
 library(tidyverse)
 GDP_yearly_average <- average_GDP_stats %>% 
   pivot_longer(-`Income Group`, names_to = "year", values_to = "gdp")
@@ -1339,8 +1343,6 @@ summary(plm(best_call, data = pseries_train,
 
 ```
 
-RNN model
-
 ```{r, cache = TRUE, include=FALSE, eval=FALSE}
 # wrangle the data into 3 dimensions
 to_3d_all_features <- indicators_plm %>% 
@@ -1924,7 +1926,7 @@ tribble(~abs_loss, as.numeric(evaluate(model_part_1, X_test_RNN_continuous_GDP, 
   kable_styling(latex_options = "HOLD_position")
 ```
 
-The model, with very minimal tuning, Table \@ref(tab:model1-abs-acc) shows that this model can predict real GDP per capita within around $7500 USD. That's not perfect, but according to 2021 figures, that's substantially *less* than the difference between the US and Canada or the difference between Australia and the UK It's, perhaps as expected, very directionally accurate with just the above four features.
+The model, with very minimal tuning, Table \@ref(tab:model1-abs-acc) shows that this model can predict real GDP per capita within around $5900 USD. That's not perfect, but according to 2021 figures, that's substantially *less* than the difference between the US and Canada or the difference between Australia and the UK. It's, perhaps as expected, very directionally accurate with just the above four features.
 
 Again, this model does not have very much tuning. I decided to save time to have the vast majority of tuning be for my models for [Part II: Economic Structure and Economic Growth], which is more involved and more relevant to what I wanted to study with this project. 
 
@@ -1942,7 +1944,7 @@ To tune these models, I gave each formulation an extremely high degree of person
 
 First, I tried the different time periods to define "economic growth" as the response variable. Second, I tried models with one to eight lags in them. Each lag is an interaction term of a value from a previous year which takes a coefficient (that may or may not be significant). Lastly, I tried three models of lags: models that contained lags of GDP per capita from previous years, lags that contained annual growth rates from previous years, and models that contained both kinds of lags.  
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, cache=TRUE}
 tibble(personalization_feature = c("Response Variable", "Lag Number", "Lag Type"),
        types = c("1, 3, 5, 10 year growth period", 
                  "1 to 8 lags",
@@ -1973,7 +1975,7 @@ param_grid_combined %>%
 ```
 Because of the high variance in test MSE, the number of significant features and significant lags across all different linear model specifications, I bootstrapped the calculations. As you can see in Figure \@ref(fig:plm-tuning-results), there still is a very high degree of variance in the results. However, there are a few conclusions that I drew from playing around the different tuning parameters. The first is that past annual growth rates are a much better predictor of future growth than past GDP per capita, as evidenced by the red lines in Figure \@ref(fig:plm-tuning-results) hanging much lower than the green ones. The second clear conclusion is that the lags are a much better predictor of future growth than most of the other features in the model. The lags are almost always significant, while most features almost always are not. Lastly, since in absolute test MSE as the growth period extended only increased, I standardized the test MSE values with respect to the growth period that they have as a response variable. Once standardized, it interestingly enough doesn't appear that a longer growth period tends to lead to worse predictive power.
 
-```{r plm-var-imp-tibble, echo=FALSE}
+```{r plm-var-imp-tibble, echo=FALSE, cache=TRUE}
 wdi_series %>% filter(`Series Code` %in% indicators) %>% 
   select(`Series Code`, `Indicator Name`) %>% 
   inner_join(enframe(FINAL_times_plm_coef_sig), by = c("Series Code" = "name")) %>%
@@ -1999,8 +2001,8 @@ wdi_series %>% filter(`Series Code` %in% indicators) %>%
   ggplot(aes(y = indicator, x = times)) +
   geom_bar(position="dodge", stat="identity") +
   labs(xlab = "Relative Importance", ylab = "Indicator", 
-       title = "Relative Variable Importances Averaged over Linear Models") +
-  theme(text = element_text(size=15),
+       title = "Relative Importance") +
+  theme(text = element_text(size=11),
         legend.key.size = unit(0.5, 'cm')) 
   
 ```
