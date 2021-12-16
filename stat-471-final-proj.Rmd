@@ -6,7 +6,54 @@ output:
   pdf_document: default
 ---
 
-```{r setup, include=FALSE}
+# Executive Summary
+
+##Problem
+
+In 1933, after Josef Stalin replaced the then-deceased Vladimir Lenin as premier of the Soviet Union, he looked around at the much wealthier nations to his West and noticed one key commonality – Great Britain, France and Germany all had well-developed industrial sectors. Stalin made the reallocation of resources from agriculture to industry perhaps the defining feature of his three decades of rule, even when it came at the cost of the lives of 35+ million of his own citizens.
+
+This study sought to measure the impact of a “Big Push” – a massive reallocation of capital and labor from less productive (lower value-added) segments of the economy to higher value-added 
+Data
+
+## Data
+
+The majority of the data came from the World Bank Development Indicators. They are one of the world’s most comprehensive datasets on economic development by country, with nearly 1500 indicators across 90 topics gathered annually at the country level since 1960. However, since there was a sparsity of data on some indicators, I chose indicators which contained a minimum threshold of data and imputed values for the remaining NA values.
+
+Additionally, since I believed that data relating to armed conflict would be very relevant, I obtained this data from the Uppsala Conflict Data Program.
+
+## Analysis
+
+The first part of my project consists of an exploratory data analysis that attempts to understand the relationship between the allocation of resources across the major sectors of an economy and the level of economic development. I do this through the use of many summary statistics and graphs that explore the distribution of the labor across agriculture, industry and GDP per capita, as well as create a Recurrent Neural Network (RNN) to model this relationship.
+
+The main focus of this assignment attempts to look at the relationship between the allocation of these resources and economic growth. I first pull 27 different covariates from the World Bank Development Indicators and a 28th focused on the level of armed conflict in different countries. First, I conducted a panel regression (through the plm package) of real GDP per capita growth (over various time periods) on the covariates identified and the different numbers of lags. Following this, I create a Recurrent Neural Network that predicts GDP per capita growth using the 28 features and a time length of 5 years for the samples. 
+
+## Conclusions
+
+# Introduction
+
+## Background Information
+
+The original motivation for this topic was my senior thesis in economics. Attempts to assess how the “China shock” heterogeneously impacts Brazil through trade. The enormity of Chinese demand for commodities, in particular soy, petroleum and iron, coupled with the prohibitively competitive efficiency of Chinese manufacturing, has led to an enormous shift in the focus of the Brazilian economy from industry to agriculture and mining over the past 20 years. This is not problematic in itself, but one of the main concerns of this “deindustrialization” of the country is that it is a huge barrier to growth. I wanted to use some of the models and methods I had learned in class to see if this deindustrialization will have economic consequences for a country in the long run. 
+
+Everything I learned about Stalinism in ECON 271: Foundations of a Market Economy just further stimulated my interest. In that class, we researched and debated quite a bit about whether or not Stalinism and the 30+ million deaths associated with it was necessary to create the relatively modern industrial superpower capable of defeating Nazi Germany in World War Two. 
+
+In addition, a huge motivation for the initial exploratory data analysis of this assignment was based on the very broad generalization of agricultural economies (e.g. Chad, Kenya, Ghana, Afghanistan) as poor economies, industrial economies (e.g. China, Thailand, Malaysia, Mexico) as middle income economies and service economies (e.g. the US, Japan, the UK, Israel) as wealthy economies. This logic follows from the fact that the amount of value added per labor hour increases in that order, so therefore the wage rate of economies should increase in that order.
+
+## Analysis Goals
+To put it succinctly, my principal analysis goals were to understand the relationship between the allocation of resources in an economy and its economic growth in the medium term. As a secondary area of interest, I wanted to understand how precisely the allocation of resources across various sectors of an economy (agriculture, industry and services) was able to determine it’s level of economic development. 
+
+For the initial data exploration, in which I wanted to understand the strength of the relationship between the allocation of resources across different economic sectors and the country’s economic development, I used the allocation of labor across the three broad sectors of an economy (agriculture, industry and services) as the main features to predict the response. The data on this allocation of labor was surprisingly abundant. The response that I aimed to predict was GDP per capita, measured in current 2021 US dollars at purchasing power parity (PPP).
+
+In the main focus of the assignment, I chose a selection of 28 different features from the World Bank Development Index that intended to either assess the allocation of resources within an economy or control for omitted variable bias. The outcome that I tried to predict was the percentage difference in an economy over the past several years. For the size/duration of this time frame, I tried a period of 1, 3, 5 and 10 years. 
+
+Success is evaluated in various aspects. The first metric is test MSE, i.e. how well is the model able to predict outcomes on data that it has not been trained on. This is a good approximation of how well the model was able to fit the underlying data generating process. The numerical, objective nature of this metric also makes it great to compare different models. The second criterion is how well the models can differentiate between the different importances of different features. If the end goal is to understand what allocation of resources within an economy will help it grow the most in the medium term, it’s crucial to understand what levers are available to pull, which direction to pull them, and which levers are the most powerful.
+
+## Significance
+
+As countries across the world, particularly emerging market economies, strive to achieve sustainable growth to improve the quality of life of their citizens over the long run, studies like these are crucial. If a model can have a very low test MSE on the empirical data (meaning that it represents very well the underlying data generating process) and it is able to distinguish well between the features of which it is a part (indicating what are the important levers a “social planner” should pull), such a model would have enormous practical applications for governments across the world. Economic development leads to better economic lives for the majority of citizens of a country and aggregate gains in welfare can be huge.
+
+
+```{r setup, cache = TRUE, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, lazy.cache = FALSE)
 library(tidyverse)
 library(cowplot)
@@ -14,9 +61,11 @@ library(rnn)
 library(caret)
 library(keras)
 library(plm)
+library(kableExtra)
+source("/Users/ethan/Documents/R/stat-471-fall-2021/stat-471-fall-2021/functions/deep_learning_helpers.R")
 ```
 
-```{r imports, cache = TRUE}
+```{r imports, cache = TRUE, include=FALSE}
 # a-z = 26 + aa-az = 26 + ba-bn = 14, sum = 66
 # country name, country code, indicator name, indicator code, 1960-2020, empty final col
 wdi_raw <- 
@@ -37,9 +86,9 @@ conflict_df <-
 ```
 
 
-# Part 1: Economic Structure and Income per Capita (EDA)
+Part 1: Economic Structure and Income per Capita (EDA)
 
-```{r plots-p1-p4}
+```{r plots-p1-p4, cache = TRUE, include=FALSE}
 # this part is almost an EDA
 
 # let's create a table showing average shares by income group over time
@@ -89,7 +138,9 @@ p1 <- summary_trinity_time_income_group_90s %>%
   labs(x = "Sector", y = "Share of Employment",
        title = "1991-1999 Average Employment by Sector by Income Group") +
   guides(fill=guide_legend(title="Income Group")) +
-  theme_bw()
+  theme(text = element_text(size=9),
+        legend.key.size = unit(0.5, 'cm'),
+        plot.title = element_text(hjust=0.5)) 
   
 summary_trinity_time_income_group_00s <- 
   summary_trinity_time_income_group %>%
@@ -120,7 +171,9 @@ p2 <- summary_trinity_time_income_group_00s %>%
   labs(x = "Sector", y = "Share of Employment",
        title = "2000-2009 Average Employment by Sector by Income Group") +
   guides(fill=guide_legend(title="Income Group")) +
-  theme_bw()
+  theme(text = element_text(size=9),
+        legend.key.size = unit(0.5, 'cm'),
+        plot.title = element_text(hjust=0.5)) 
 
 summary_trinity_time_income_group_10s <- 
   summary_trinity_time_income_group %>%
@@ -151,13 +204,11 @@ p3 <- summary_trinity_time_income_group_10s %>%
   labs(x = "Sector", y = "Share of Employment",
        title = "2010-2019 Average Employment by Sector by Income Group") +
   guides(fill=guide_legend(title="Income Group")) +
-  theme_bw()
+  theme(text = element_text(size=9),
+        legend.key.size = unit(0.5, 'cm'),
+        plot.title = element_text(hjust=0.5)) 
 ```
-```{r plot-grid-p1-p4}
-# you can see that there is a clear distinction between different income groups of countries
-plot_grid(p1,p2,p3,ncol=1)
-```
-```{r share-change-over-time}
+```{r share-change-over-time, cache = TRUE, include=FALSE}
 # lets see how the shares of each sector evolve over time
 shares_change_over_time <- wdi_country %>% 
   filter(!(is.na(`Currency Unit`))) %>% # remove regional groupings
@@ -181,7 +232,7 @@ shares_change_over_time %>%
   scale_x_discrete(breaks = seq(1991, 2019, by = 5))
   
 ```
-```{r shares-change-tibble}
+```{r shares-change-tibble, cache = TRUE, include=FALSE}
 high_inc_agr_1991 =  shares_change_over_time %>% 
   filter(`Income Group` == "High income",
          year == 1991,
@@ -283,7 +334,7 @@ low_inc_srv_2019 = shares_change_over_time %>%
          indicator == "Services") %>% pull(share)
 
 # percent change over time across sectors and income groups, precipitous decline in ag, increase in services
-tibble(
+pct_change_groups_time <- tibble(
   income_group = c("High income", "Upper middle income", "Lower middle income",
                    "Low income"),
   change_agriculture = c((high_inc_agr_2019 - high_inc_agr_1991)/high_inc_agr_1991,
@@ -300,7 +351,7 @@ tibble(
                          (low_inc_srv_2019 - low_inc_srv_1991)/low_inc_srv_1991)
 )
 ```
-```{r calculate-boxplot}
+```{r calculate-boxplot, cache = TRUE, include=FALSE}
 # variance in each group and each time period
 summary_trinity_time_income_group <- summary_trinity_time_income_group %>%
   mutate(income_group_order = case_when( # order the income groups
@@ -337,23 +388,12 @@ tens_boxplot <- summary_trinity_time_income_group %>%
   labs(x = "Income Group", y = "Share of Employment",
        title = "10s Distribution of Emp. by Sector by Income Group") +
   guides(fill=guide_legend(title="Sector")) +
-  theme_bw()
-```
-```{r plot-boxplot}
-# boxplot(ninteties_boxplot,
-#         millenium_boxplot,
-#         tens_boxplot,
-#         ncol=1)
-
-# you see that high income economies are almost universally not agricultural
-# moreover, even though there is variation, there isn't even much overlap in the 25-75 middle split of income grop
-
-ninteties_boxplot
-millenium_boxplot
-tens_boxplot
+  theme(text = element_text(size=9),
+        legend.key.size = unit(0.5, 'cm'),
+        plot.title = element_text(hjust=0.5)) 
 ```
 
-```{r calc-observations}
+```{r calc-observations, cache = TRUE, include=FALSE}
 # calculate number of observations to work with 
 trinity_filtered <- wdi_country %>% 
   filter(!(is.na(`Currency Unit`))) %>% # remove regional groupings
@@ -366,7 +406,7 @@ trinity_filtered
 # 516 rows, which means 172 countries with data from 1991-2019 (29 years of data)
 ```
 
-```{r}
+```{r, cache = TRUE, include=FALSE}
 # get data of employment shares and GDP
 gdp_pcap_ppp_countries <- wdi_raw %>% 
   filter(`Indicator Code` %in% c("NY.GDP.PCAP.PP.CD")) %>%
@@ -426,7 +466,7 @@ for(row in 4:nrow(within_model_data_imputed)) {
   row = row + 4
 }
 ```
-```{r}
+```{r, include=FALSE}
 GDP_yearly_average <- average_GDP_stats %>% 
   pivot_longer(-`Income Group`, names_to = "year", values_to = "gdp")
 GDP_yearly_average$year <- as.numeric(GDP_yearly_average$year)
@@ -440,9 +480,9 @@ GDP_yearly_average %>%
 # In these categories
 ```
 
-## RNN: Continuous Regression on GDP per Capita
+RNN: Continuous Regression on GDP per Capita
 
-```{r}
+```{r, cache = TRUE, include=FALSE}
 num_countries <- dim(within_model_data_imputed %>% group_by(`Short Name`) %>%
   summarise(n()))[1]
 num_years <- 2019-1991 + 1
@@ -481,7 +521,7 @@ for (year in 1:num_years) {
 ```
 
 
-```{r}
+```{r, cache = TRUE, include=FALSE}
 # cut into sections
 # set some parameters for our model
 max_len <- 4 # the number of previous examples we'll look at
@@ -499,28 +539,30 @@ for(row in 1:(dim(data_3d)[1])) {
 }
 ```
 
-```{r}
+```{r, cache = TRUE, include=FALSE}
 # split into test and train
 X_RNN_continuous_GDP <- data_segmented[,,-1]
 y_RNN_continuous_GDP <- data_segmented[,,1]
 
 set.seed(43)
-train_indices <- sample(1:(dim(data_segmented)[1]), dim(data_segmented)[1]*.9)
+train_indices <- sample(1:(dim(data_segmented)[1]), dim(data_segmented)[1]*.8)
 
 # training data
 X_train_RNN_continuous_GDP <- X_RNN_continuous_GDP[train_indices,,]
-y_train_RNN_continuous_GDP <- y_RNN_continuous_GDP[train_indices]
+y_train_RNN_continuous_GDP <- y_RNN_continuous_GDP[train_indices,]
 
 # testing data
 X_test_RNN_continuous_GDP <- X_RNN_continuous_GDP[-train_indices,,]
-y_test_RNN_continuous_GDP <- y_RNN_continuous_GDP[-train_indices]
+y_test_RNN_continuous_GDP <- y_RNN_continuous_GDP[-train_indices,]
+
+
 ```
 
-```{r}
+```{r, include=FALSE}
 batch_size <- 64 # number of sequences to look at at one time during training
 total_epochs <- 100 # how many times we'll look @ the whole dataset while training our model
 
-model <- keras_model_sequential() %>%
+model_part_1 <- keras_model_sequential() %>%
   layer_dense(input_shape = dim(X_train_RNN_continuous_GDP)[2:3], units = max_len) %>%
   layer_simple_rnn(units = 64, name="RNN_1",
                    activation = "relu",
@@ -533,142 +575,27 @@ model <- keras_model_sequential() %>%
                    return_sequences = TRUE) %>%
   layer_dense(units = 1)
 
-model %>% compile(loss = "mean_squared_error",   # which loss to use
+model_part_1 %>% compile(loss = "mean_squared_error",   # which loss to use
           optimizer = "RMSprop",     # how to optimize the loss
           metrics = c("mean_absolute_error"))             # how to evaluate the fit
 ```
 
-```{r}
+```{r, cache = TRUE, include=FALSE}
 # Actually train our model! This step will take a while
-trained_model <- model %>% fit(
+model_part_1 %>% fit(
     x = X_train_RNN_continuous_GDP, # sequence we're using for prediction 
     y = y_train_RNN_continuous_GDP, # sequence we're predicting
     batch_size = batch_size, # how many samples to pass to our model at a time
     epochs = total_epochs, # how many times we'll look @ the whole dataset
     validation_split = 0.33) # how much data to hold out for testing as we go along
-```
 
-## RNN: Classification on Income Group
-
-```{r}
-income_group_names = tribble(
-  ~name, ~code,
-  "Low income", 0,
-  "Lower middle income", 1,
-  "Upper middle income", 2,
-  "High income", 3
-)
-classification_within_model <- within_model_data_imputed
-for (row in 1:nrow(classification_within_model)) {
-  if (classification_within_model[row,3] %>% as.character() ==
-      "NY.GDP.PCAP.PP.CD") {
-    group_code <- income_group_names %>% 
-      filter(name == (classification_within_model[row,2] %>% as.character())) %>%
-      pull(code)
-    classification_within_model[row,4:(dim(classification_within_model)[2])] <-
-      as.list(rep(group_code, num_years))
-      }
-}
-  
-# put data into 3d array
-income_group_3d <- array(dim = c(num_countries, num_years, num_features+1)) # add year
-for (row in 1:nrow(classification_within_model)) {
-  #print(row)
-  feature <- row %% num_features 
-  if (feature == 0) {
-    feature <- num_features
-  }
-  #print(feature)
-  country = trunc((row+(num_features-1))/num_features)
-  for (col_year in 1:num_years) {
-    income_group_3d[country, col_year, feature] <- 
-      classification_within_model[row, col_year+3] %>%
-      as.numeric()
-  }
-}
-
-# add year as a variable
-for (year in 1:num_years) {
-  income_group_3d[,year,5] <- year+1990
-}
-
-# cut into sections
-# set some parameters for our model
-max_len <- 4 # the number of previous examples we'll look at
-stride <- 1 # striding between segments when selecting time series data
-segs_per_country <- (num_years - max_len)/stride
-num_classes <- dim(income_group_names)[1]
-
-# get a list of start indexes for our (overlapping) chunks
-classification_segmented <- array(dim = c(num_countries*segs_per_country, 
-                                max_len+1, num_features+1)) # add year
-for(row in 1:(dim(income_group_3d)[1])) {
-  for(starting_col in 1:segs_per_country) {
-    seg_row <- ((row-1)*segs_per_country) + starting_col
-    classification_segmented[seg_row,,] <- 
-      income_group_3d[row,starting_col:(starting_col+max_len),]
-  }
-}
 ```
 
 
-```{r}
-# split into test and train
-X_RNN_classification_group <- classification_segmented[,,-1]
-y_RNN_classification_group <- classification_segmented[,,1]
 
-set.seed(43)
-train_indices <- sample(1:(dim(classification_segmented)[1]), 
-                        dim(classification_segmented)[1]*.9)
+Part 2: Economic Structure and Income per Capita Growth
 
-# training data
-X_train_RNN_classification_group <- X_RNN_classification_group[train_indices,,]
-# recode response labels using "one-hot" representation
-y_train_RNN_classification_group <- y_RNN_classification_group[train_indices]
-#  to_categorical(y_RNN_classification_group[train_indices], num_classes)
-
-# testing data
-X_test_RNN_classification_group <- X_RNN_classification_group[-train_indices,,]
-y_test_RNN_classification_group <- y_RNN_classification_group[-train_indices]
-#  to_categorical(y_RNN_classification_group[train_indices], num_classes)
-```
-
-```{r}
-batch_size <- 64 # number of sequences to look at at one time during training
-total_epochs <- 100 # how many times we'll look @ the whole dataset while training our model
-
-model <- keras_model_sequential() %>%
-  layer_dense(input_shape = dim(X_train_RNN_classification_group)[2:3], units = max_len) %>%
-  layer_simple_rnn(units = 64, name="RNN_1",
-                   activation = "relu",
-                   return_sequences = TRUE) %>%
-  layer_simple_rnn(units = 32, name="RNN_2",
-                   activation = "relu",
-                   return_sequences = TRUE) %>%
-  layer_simple_rnn(units = 32, name="RNN_3",
-                   activation = "relu",
-                   return_sequences = TRUE) %>%
-  layer_dense(units = num_classes, activation = "sigmoid")
-
-model %>% compile(loss = "categorical_crossentropy",   # which loss to use
-          optimizer = "RMSprop",     # how to optimize the loss
-          metrics = c("accuracy"))             # how to evaluate the fit
-```
-
-```{r}
-# # Actually train our model! This step will take a while
-# trained_model <- model %>% fit(
-#     x = X_train_RNN_classification_group, # sequence we're using for prediction 
-#     y = y_train_RNN_classification_group, # sequence we're predicting
-#     batch_size = batch_size, # how many samples to pass to our model at a time
-#     epochs = total_epochs, # how many times we'll look @ the whole dataset
-#     validation_split = 0.33) # how much data to hold out for testing as we go along
-```
-
-
-# Part 2: Economic Structure and Income per Capita Growth
-
-```{r}
+```{r, cache = TRUE, include=FALSE}
 # feature codes
 # outcome
 vars1 <- c("NY.GDP.PCAP.CD") #"GDP per capita (current US$)"
@@ -763,29 +690,6 @@ indicators_complete <-
   by = c("Country Name" = "Short Name")
   )
 
-# it looks like we have a bunch of data starting in 1991
-# indicators_complete %>% 
-#   summarise(`1979` = sum(!is.na(`1979`)),
-#             `1980` = sum(!is.na(`1980`)),
-#             `1981` = sum(!is.na(`1981`)),
-#             `1982` = sum(!is.na(`1982`)),
-#             `1983` = sum(!is.na(`1983`)),
-#             `1984` = sum(!is.na(`1984`)),
-#             `1985` = sum(!is.na(`1985`)),
-#             `1986` = sum(!is.na(`1986`)),
-#             `1987` = sum(!is.na(`1987`)),
-#             `1988` = sum(!is.na(`1988`)),
-#             `1989` = sum(!is.na(`1989`)),
-#             `1990` = sum(!is.na(`1990`)),
-#             `1991` = sum(!is.na(`1991`)),
-#             `1992` = sum(!is.na(`1992`)),
-#             `1993` = sum(!is.na(`1993`)),
-#             `1994` = sum(!is.na(`1994`)),
-#             `1995` = sum(!is.na(`1995`)),
-#             `2000` = sum(!is.na(`2000`)),
-#             `2005` = sum(!is.na(`2005`)),
-#             `2010` = sum(!is.na(`2010`)),
-#             `2015` = sum(!is.na(`2015`)))
 indicators_complete <- indicators_complete %>% 
   select(-(`1960`:`1983`), -`...66`, -`Indicator Name`)
 conflict_deaths <- conflict_deaths %>%
@@ -827,7 +731,7 @@ indicators_complete_joined
 ```
 
 
-```{r}
+```{r, cache = TRUE, include=FALSE}
 # value imputation
 indicators_imputed <- indicators_complete_joined
 for (row in 1:(dim(indicators_complete_joined)[1])) {
@@ -889,51 +793,10 @@ for (row in 1:(dim(indicators_imputed)[1])) {
 indicators_imputed <- indicators_imputed %>% drop_na() # drop na country names
 
 ```
-```{r}
-indicators_imputed %>%
-  group_by(`Indicator Code`) %>%
-  summarise(`1984` = sum(is.na(`1984`)),
-            `1985` = sum(is.na(`1985`)),
-            `1986` = sum(is.na(`1986`)),
-            `1987` = sum(is.na(`1987`)),
-            `1988` = sum(is.na(`1988`)),
-            `1989` = sum(is.na(`1989`)),
-            `1990` = sum(is.na(`1990`)),
-            `1991` = sum(is.na(`1991`)),
-            `1992` = sum(is.na(`1992`)),
-            `1993` = sum(is.na(`1993`)),
-            `1994` = sum(is.na(`1994`)),
-            `1995` = sum(is.na(`1995`)),
-            `2000` = sum(is.na(`2000`)),
-            `2001` = sum(is.na(`2001`)),
-            `2002` = sum(is.na(`2002`)),
-            `2003` = sum(is.na(`2003`)),
-            `2004` = sum(is.na(`2004`)),
-            `2005` = sum(is.na(`2005`)),
-            `2006` = sum(is.na(`2006`)),
-            `2007` = sum(is.na(`2007`)),
-            `2008` = sum(is.na(`2008`)),
-            `2009` = sum(is.na(`2009`)),
-            `2010` = sum(is.na(`2010`)),
-            `2011` = sum(is.na(`2011`)),
-            `2012` = sum(is.na(`2012`)),
-            `2013` = sum(is.na(`2013`)),
-            `2014` = sum(is.na(`2014`)),
-            `2015` = sum(is.na(`2015`)),
-            nnan2016 = sum(is.na(`2016`)),
-            `2017` = sum(is.na(`2017`)),
-            `2018` = sum(is.na(`2018`)),
-            `2019` = sum(is.na(`2019`)),
-            nnan2020 = sum(is.na(`2020`)))
-
-indicators_imputed
-```
+Variable selection with best subset regression
 
 
-## Variable selection with best subset regression
-
-
-```{r}
+```{r, cache = TRUE, include=FALSE}
 # Wrangle into correct format
 indicators_plm <- indicators_imputed %>%
   pivot_longer(cols = (`1984`:`2020`), names_to = "Year", values_to = "Value") %>%
@@ -982,14 +845,9 @@ for (row in 1:(dim(indicators_plm)[1])) {
     indicators_plm$`10yr_growth`[row] = (this_year-yr0)/yr0
   }
 }
-
-# pseries_train <- pseriesfy(pdata.frame(as.data.frame(indicators_plm_train), 
-#                         index = c("country_id", "Year")))
-# pseries_test <- pseriesfy(pdata.frame(as.data.frame(indicators_plm_test), 
-#                         index = c("country_id", "Year")))
 ```
 
-```{r}
+```{r, cache = TRUE, include=FALSE}
 # tune for number of lags and key variables
 max_lags <- 8
 num_bootstrap_iterations <- 12
@@ -1399,7 +1257,7 @@ for (i in 0:max_lags) {
   gdp_both_lags_grid$num_sig_lags_10yr[i] = mean(both_bootstrap_grid$num_sig_lags_10yr, na.rm=TRUE)
 }
 ```
-```{r}
+```{r, cache = TRUE, include=FALSE}
 gdp_growth_lags_grid <- as_tibble(gdp_growth_lags_grid) %>%
   mutate(lag_type = "growth")
 gdp_pcap_lags_grid <- as_tibble(gdp_pcap_lags_grid) %>%
@@ -1433,7 +1291,7 @@ param_grid_combined %>%
 # growth seems to be a much better choice of lags than other kinds of lags 
 
 ```
-```{r}
+```{r, cache = TRUE, include=FALSE}
 # Occam's Razor Principle
 best_call <- paste("X3yr_growth ~ ", all_features, get_lags("X3yr_growth", 4))
 pseries <- pseriesfy(pdata.frame(as.data.frame(indicators_plm), 
@@ -1445,9 +1303,9 @@ summary(plm(best_call, data = pseries_train,
 
 ```
 
-## RNN model
+RNN model
 
-```{r}
+```{r, cache = TRUE, include=FALSE}
 # wrangle the data into 3 dimensions
 to_3d_all_features <- indicators_plm %>% 
   select(-`1yr_growth`, -`5yr_growth`, -`10yr_growth`, -country_id) %>% # select 3 yr growth as response
@@ -1493,7 +1351,7 @@ for (year in 1:num_years) {
 ```
 
 
-```{r}
+```{r, cache = TRUE, include=FALSE}
 # cut into sections
 # set some parameters for our model
 max_len <- 4 # the number of previous examples we'll look at
@@ -1511,7 +1369,7 @@ for(row in 1:(dim(all_features_3d)[1])) {
 }
 ```
 
-```{r}
+```{r, cache = TRUE, include=FALSE}
 # split into test and train
 X_RNN_full_data <- segmented_full_data[,,-1]
 y_RNN_full_data <- segmented_full_data[,,1]
@@ -1528,7 +1386,7 @@ X_RNN_full_test <- X_RNN_full_data[-train_indices,,]
 y_RNN_full_test <- y_RNN_full_data[-train_indices,]
 ```
 
-```{r}
+```{r, cache = TRUE, include=FALSE}
 batch_size <- 64 # number of sequences to look at at one time during training
 total_epochs <- 100 # how many times we'll look @ the whole dataset while training our model
 
@@ -1580,7 +1438,7 @@ model_3 %>% compile(loss = "mean_squared_error",   # which loss to use
           metrics = c("mean_absolute_error"))             # how to evaluate the fit
 ```
 
-```{r}
+```{r, cache = TRUE, include=FALSE}
 # Actually train our model! This step will take a while
 trained_model_1 <- model_1 %>% fit(
     x = X_RNN_full_train, # sequence we're using for prediction 
@@ -1606,7 +1464,7 @@ trained_model_3 <- model_3 %>% fit(
 
 ```
 
-```{r}
+```{r, cache = TRUE, include=FALSE}
 # RNN model comparison
 model_1_mean_abs_error <- 
   as.numeric(evaluate(model_1, X_RNN_full_test, y_RNN_full_test, verbose = FALSE)[2])
@@ -1620,7 +1478,7 @@ rnn_model_errs_tibble <- tribble(~model_1, ~model_2, ~model_3,
 rnn_model_errs_tibble
 ```
 
-```{r}
+```{r, cache = TRUE, include=FALSE}
 # feature importance throgh scrambling
 # pseudocode until I get internet
 scrambled_feature_mse_vector <- rep(0, (dim(X_RNN_full_test)[3]-1))
@@ -1650,7 +1508,193 @@ scrambled_feature_tibble <- tibble(feature_number = c(1:(dim(scrambled_3d)[3]-1)
 scrambled_feature_tibble
 ```
 
-# Model evaluation
+# Data
 
-Broad topics: 
-- Economic Policy & Debt, Education, Environment, Financial Sector, Gender, Health, Infrastructure, Poverty, Private Sector & Trade, Public Sector, Social Protection & Labor, World Bank, International Debt Statistics
+## Data Sources
+
+The vast majority of the data were collected from the World Bank Development Indicators. The Development Indicators can be accessed [here](https://databank.worldbank.org/source/world-development-indicators). The data contain over 1400 time series indicators for 217 different economies and over 40 supranational groupings, with several indicators going back over 50 years. Because the task of collecting such diffuse data is impossible, for one organization to manage, the World Bank sources a lot of the data from official sources such as national statistics organizations, United Nations agencies, academia and beyond. However, the World Bank Group does conduct several surveys and research projects of their own to add to the data set.
+
+However, since I knew that armed conflict would have a huge influence on the macroeconomic growth of an observation country, I decided to join more data sourced from the [Uppsala Conflict Data Program (UCDP)](https://ucdp.uu.se/?id=1&id=1). The UCDP collects data on armed conflict since 1975. They define an "event" as any instance of fatal organized violence. And to ensure truly global representation in their data set, they utilize a keyword search through the Dow Jones Factiva Indicator, which annually returns around 50 thousand unique events which are then reviewed by human evaluators, resulting in around 10-12 new events coded each year. 
+
+## Data Cleaning
+
+To clean the data, the World Bank Development Indicators were first filtered to exclude non-country observations in the data. For the indicators, since many only have observations for a small select set of (usually wealthy and developed) countries, or only a short temporal range for the time series, or the many missing values in between where data was not collected for whatever reason, I first filtered for indicators that had adequate data for the model. This reduced the number of indicators from 1443 to 497. Then, from this list, I manually chose features which lacked high levels of multicollinearity, were expressed as a percentage rather than in absolute numbers (to avoid selection bias), and were very relevant to the project. Lastly, I removed countries without a certain availability of data and restricted the temporal range to 1984-2020, since the data became less abundant earlier in the set. In order to join the World Bank Development Indicators on the UCDP conflict data, some country names had to be manually adjusted. 
+
+Following this selection of data, values were manually imputed to make sure there were no NaN values in the data set. This imputation was done by iterating through every value in the panel data set, and, if it was null, calculating a "yearly" average and an "observation" average and then averaging both. The yearly average consisted of the average value for that indicator in a given year among all countries in that income group ("High income", "Upper middle income", "Lower middle income", or "Low income"). The observation average was the mean value for a given indicator for a given country across all years in the data set. 
+
+To wrangle the data into a format suitable for the time-series fixed effects regression in [Model 1: Linear Methods (Linear Models for Panel Data)], the data was first transformed into a `panel data dataframe` from the `plm` package, and then subsequently transformed into a `pseries` object from the package with the `Year` and `country_id` as indices. 
+
+For the Recurrent Neural Network models, the data had to be wrangled into a three-dimensional format, where the first dimension represented observations, the second dimension represented time, and the third dimension represented the features of the model. This was done iteratively through for loops, parsing every value in the two-dimensional data and mapping it to its correct position in the three-dimensional array. Following this, each country time series was split into 5 year long strips with a stride of one (e.g. one strip for 1999-2003, one for 2000-2004, one for 2001-2005, etc.) and then aggregated into another 3-dimensional array.
+
+## Data Description
+
+```{r data-description-1, cache=TRUE, eval=TRUE, echo=FALSE}
+indicators_imputed <- indicators_imputed %>% drop_na()
+num_indicators <- dim(indicators_imputed %>% group_by(`Indicator Code`) %>%
+  summarise())[1]
+num_income_groups <- 4
+num_years <- 2020-1984+1
+num_countries <- dim(indicators_imputed %>% group_by(`Country Name`) %>%
+  summarise())[1]
+num_rows <- dim(indicators_imputed)[1]
+num_cols <- dim(indicators_imputed)[2]
+tibble(stat = c("Number of Indicators",
+                "Number of Income Groups",
+                "Number of Years Considered",
+                "Number of Countries",
+                "Number of Rows",
+                "Number of Columns"),
+       val = c(num_indicators, num_income_groups, num_years, 
+               num_countries, num_rows, num_cols)) %>%
+  kable(format = "latex", row.names = NA,
+                        booktabs = TRUE,
+                        digits = 3,
+                        col.names = c("Summary Statistic",
+                                      "Value"),
+        caption = "Summary Statistics of Data with Value Imputation") %>%
+  kable_styling(position = "center") %>%
+  kable_styling(latex_options = "HOLD_position")
+```
+
+Summary statistics of the data can be seen from Table \@ref(tab:data-description-1). There are a total of 5600 observations and 40 columns in the principal data set used, after value imputation. These observations can be divided into time series data (from 1984 to 2020) for 200 countries, grouped into 4 different income groups, across 28 different indicators. 
+
+```{r feature-description, cache=TRUE, eval=TRUE, echo=FALSE}
+initial_tibble <- 
+  wdi_series %>% filter(`Series Code` %in% indicators) %>% 
+  select(`Series Code`, `Indicator Name`) %>%
+  add_row(`Series Code` = "Conflict", 
+          `Indicator Name` = "Sqrt of conflict deaths given country and year") %>%
+  add_column(Type = c("Continuous")) %>%
+  kable(format = "latex", row.names = NA,
+                        booktabs = TRUE,
+                        digits = 3,
+                        col.names = c("Indicator Code",
+                                      "Indicator Name"),
+        caption = "List of Indicators Used in Analysis") %>%
+  kable_styling(position = "center") %>%
+  kable_styling(latex_options = "HOLD_position")
+```
+
+The 28 different features considered in the data set are listed in Table \@ref(tab:feature-description). However, these features should be considered only 27, since the variable `NY.GDP.PCAP.CD` or `GDP per capita (current US$)` was used to construct the response variables. In [Part II: Economic Structure and Economic Growth], the response variable was continuous, and was defined as a the percentage change in GDP of a given observation (country) over a certain period of time. This could be calculated as (GDP in year n - GDP in year 0)/GDP in year 0. The time periods of 1 year, 3 years, 5 years and 10 years were all tried on the data set. 
+
+For [Part I: Economic Structure and Economic Development Level], the continuous feature `NY.GDP.PCAP.CD` was used directly as the response variable. 
+
+## Data Allocation
+
+To get good estimates for [Model 1: Linear Methods (Linear Models for Panel Data)], in this section, the values were bootstrapped and models were calculated from train/test splits multiple times. In each train/test split, 80% of the values were used for training. 20% of the values were used for testing, and test MSE, number of significant features and other metrics were calculated on this test data and aggregated. 
+
+In [Model 2: Recurrent Neural Network], no bootstrapping was done, but 80% of the data was held in reserve as test data to assess model fit. During training, the neural network held 25% of the training data in reserve as validation data in order to tune the parameters. 
+
+# Modeling
+
+## Part I: Economic Structure and Economic Development Level
+
+This first portion of data looked to see at the relationship between the structure of an economy at the most aggregate, generalized level and its economic development level, measured in real (purchasing power parity) GDP per capita. It consists of [Exploratory Data Analysis (Data Exploration)], which looks at summary statistics to understand this relationship and [Model 1: Recurrent Neural Network], which builds a RNN model to predict GDP (PPP) per capita.
+
+### Exploratory Data Analysis (Data Exploration)
+
+```{r plot-grid-p1-p3, cache = TRUE, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 6, fig.height = 7, out.width = "100%", fig.align='center', fig.cap = "Average Employment by Sector by Income Group Over Time"}
+plot_grid(p1,p2,p3,ncol=1)
+```
+
+From Figure \@ref(fig:plot-grid-p1-p3), it is very visible that there is a clear correlation between the structure of an economy and its "income level", as classified by the World Bank. As a country gets richer, resources are very clearly taken from agriculture and reallocated to industry and services, with services being an even larger recipient than industry. Furthermore, we see that not only has this trend remains quite constant over time, but that the relative gaps between income groups in various industries also seems quite constant over the past three decades. 
+
+```{r tens-boxplot, cache = TRUE, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 9, fig.height = 5, out.width = "100%", fig.align='center', fig.cap = "Distribution of Employment by Sector by Income Group 2010-2019"}
+tens_boxplot
+```
+
+Figure \@ref(fig:tens-boxplot) further affirms the strength of the connection between economic mix and GDP per capita. Not only are the averages so disparate across income groups, but that distributions are also very tight. Outliers in this data set are very few, and even if you look at the outliers with the highest share of agriculture in the "High income group", they all have a lower share of the economy dedicated to agriculture than the median "Upper middle income" country. 
+
+
+```{r share-over-time-change-plot, cache = TRUE, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height = 5, out.width = "100%", fig.align='center', fig.cap = "Sector Share Change by Income Group 1991-2019"}
+shares_change_over_time %>%
+  ggplot(aes(x = year, y = share, colour=indicator)) +
+  geom_point() +
+  facet_wrap(~`Income Group`) +
+  scale_x_discrete(breaks = seq(1991, 2019, by = 5))
+```
+
+Figure \@ref(fig:share-over-time-change-plot) shows us the importance of controlling for time in any model. The relative share of the economy dedicated to services has exploded across all income groups. Likewise, the share dedicated to agriculture has fallen through time in all income groups, as well, though the decline was perhaps more precipitous in poorer countries than in richer countries. 
+
+```{r pct-chg-groups-time-tibble, echo=FALSE, message=FALSE, warning=FALSE}
+pct_change_groups_time %>% kable(format = "latex", row.names = NA,
+                        booktabs = TRUE,
+                        digits = 3,
+                        col.names = c("Income Group",
+                                      "% Change Agriculture",
+                                      "% Change Industry",
+                                      "% Change Services"),
+        caption = "1991-2019 % Change in Share of Economy Dedicated to a Sector by Income Group") %>%
+  kable_styling(position = "center") %>%
+  kable_styling(latex_options = "HOLD_position")
+```
+
+Table \@ref(tab:pct-chg-groups-time-tibble) again shows that the economies are not static. Subject to market forces, they have been evolving over time in an enormous way (think of how much time and resources it takes to train a smallholder farmer to be a teacher, bus driver, programmer, banker, or another professional in the service industry). Table \@ref(tab:pct-chg-groups-time-tibble) shows that changes to the percentage of the economy engaged in industry have been modest, with rich countries experiencing a slight deindustrialization and poor countries experiencing slight gains in industry employment However, the data also show that the decrease in the percentage of the economy engaged in agriculture is very positively correlated with income. Conversely, again, although that the absolute gains in the service industry may be modest in poor countries, in relative terms, the poorest countries were the ones that have experienced the most dramatic shifts to a service-based economy.
+
+```{r gdpcap-time-plot, cache = TRUE, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height = 4, out.width = "100%", fig.align='center', fig.cap = "1991-2019 GDP per Capita by Income Group"}
+GDP_yearly_average %>% 
+  ggplot(aes(x = year, y = gdp, colour = `Income Group`)) +
+  geom_point() +
+  labs(xlab = "Year", ylab = "Mean GDP (PPP) per Capita", title = "GDP per Capita by Income Group") +
+  theme_bw()
+```
+
+Figure \@ref(fig:gdpcap-time-plot) shows the limitations of relying on static, 2020 classifications of country by income group. We can see from the data that rich countries have grown enormously while poor countries have remained trapped in low levels of growth. This begs the question of whether or not these poor economies have really not experienced growth, or whether there have just been a number of poor countries that have "graduated" to the status of a richer country. And, looking at the above charts, if this phenomenon exists, would the poor countries that emphasize services over agriculture be the ones that graduate to rich countries, thus giving us the massive differences across income groups that we see? These questions and many more motivate [Part II: Economic Structure and Economic Growth], where I, quite ambitiously, attempt to assess how resource allocation affects economic growth over the short-to-medium term.
+
+### Model 1: Recurrent Neural Network
+
+Given that the relationship between all of these inputs and economic growth is highly nonlinear (if we could so easily rely on coefficients to determine `X` feature's contribution to economic growth, development economists would have solved the growth trap of least developed countries already!) I decided to build a neural network to model the relationship between resource distribution and economic outcomes. And, since the data is truly panel data - it is absolutely impossible to consider any response value without understanding the identity of the country that it pertains to as well as the `n` values that came before it temporally - I chose to create and train a Recurrent Neural Network. 
+
+Considering the strength of the relationship between economic structure and GDP per capita found in [Exploratory Data Analysis (Data Exploration)], I decided to construct a very simple model that only used four input features to determine the output (real GDP per capita.) These four input features were: `employment in agriculture (% of total)`, `employment in industry (% of total)`, `employment in services (% of total)` and the year of the observation.
+
+After wrangling the data into three dimensions, splicing it into sections of length 5 and then wrangling those into another three-dimensional array, I built a simple three layer recurrent neural network. It used ReLU activation functions at each step and, since the output was continuous, the output node was singular. The input shape was (5, 4) because it took 4 features (agriculture, industry, manufacturing, services and year) over 5 distinct years.
+
+```{r model-pt1-summary, cache = TRUE, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height = 4, out.width = "100%", fig.align='center', fig.cap = "Summary of RNN Model from Part 1"}
+summary(model_part_1)
+```
+
+```{r, cache = TRUE, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height = 4, out.width = "100%", fig.align='center', fig.cap = "Training History of RNN Model from Part 1"}
+plot_model_history(model_part_1$history$history)
+```
+Using the handy imported `plot_model_history` function from class, we can see that the model learns quite a bit over the 100 epochs it's run. The predictions of the RNN model actually get quite good. Unfortunately, since the problem is not a classification one, there is no data to plot for the `accuracy` portion of this graph. 
+
+Exactly how good are the predictions of the model?
+
+```{r model1-abs-acc, cache=TRUE, eval=TRUE, echo=FALSE}
+tribble(~abs_loss, as.numeric(evaluate(model_part_1, X_test_RNN_continuous_GDP, y_test_RNN_continuous_GDP, verbose = FALSE)[2])) %>%
+  kable(format = "latex", row.names = NA,
+                        booktabs = TRUE,
+                        digits = 3,
+                        col.names = c("Absolute Test Error"),
+        caption = "Accuracy of RNN Model on Test Data") %>%
+  kable_styling(position = "center") %>%
+  kable_styling(latex_options = "HOLD_position")
+```
+
+The model, with very minimal tuning, Table \@ref(tab:model1-abs-acc) shows that this model can predict real GDP per capita within around $7500 USD. That's not perfect, but according to 2021 figures, that's substantially *less* than the difference between the US and Canada or the difference between the UK and Australia. It's, perhaps as expected, very directionally accurate with just the above four features.
+
+Again, this model does not have very much tuning. I decided to save time to have the vast majority of tuning be for my models for [Part II: Economic Structure and Economic Growth], which is more involved and more relevant to what I wanted to study with this project. 
+
+## Part II: Economic Structure and Economic Growth
+
+This section is fundamentally different from the above [Part I: Economic Structure and Economic Development Level] in two ways. First, this section 
+
+### Model 1: Linear Methods (Linear Models for Panel Data)
+
+### Model 2: Recurrent Neural Network
+
+Tune lag length!
+
+# Conclusions
+
+## Method Comparison
+
+## Takeaways
+
+## Limitations
+
+## Follow-ups
+
+The neural net performs much much better
+- these relationships and dependencies I'm trying to model are anything but linear
+
